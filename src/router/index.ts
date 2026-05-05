@@ -56,7 +56,8 @@ const router = createRouter({
           path: 'docs',
           name: 'Docs',
           component: () => import('@/views/Docs.vue')
-        }
+        },
+        
       ]
     }
   ]
