@@ -3,27 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+  /* Tema biru laundry Qucuci: air bersih, navy & sky */
   :root {
-    --background: 60 9% 98%;
-    --foreground: 24 10% 10%;
+    --background: 210 45% 97%;
+    --foreground: 215 32% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 24 10% 10%;
+    --card-foreground: 215 32% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 24 10% 10%;
-    --primary: 142 76% 36%;
+    --popover-foreground: 215 32% 14%;
+    --primary: 207 88% 42%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 60 5% 96%;
-    --secondary-foreground: 24 10% 10%;
-    --muted: 60 5% 96%;
-    --muted-foreground: 24 5% 64%;
-    --accent: 60 5% 96%;
-    --accent-foreground: 24 10% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9% 98%;
-    --border: 20 6% 90%;
-    --input: 20 6% 90%;
-    --ring: 142 76% 36%;
-    --radius: 0.5rem;
+    --secondary: 210 40% 94%;
+    --secondary-foreground: 215 30% 18%;
+    --muted: 210 38% 93%;
+    --muted-foreground: 215 16% 42%;
+    --accent: 199 85% 94%;
+    --accent-foreground: 215 35% 18%;
+    --destructive: 0 72% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 28% 88%;
+    --input: 210 28% 88%;
+    --ring: 207 88% 42%;
+    --radius: 0.6rem;
   }
 }
 
@@ -32,6 +33,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
   }
 }
