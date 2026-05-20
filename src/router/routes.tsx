@@ -18,10 +18,8 @@ const DashboardAnalyticsPage = lazy(() => import("@/pages/DashboardAnalyticsPage
 const ContactsPage = lazy(() => import("@/pages/ContactsPage"));
 const ContactDetailPage = lazy(() => import("@/pages/ContactDetailPage"));
 const CompaniesPage = lazy(() => import("@/pages/CompaniesPage"));
-const DealsPage = lazy(() => import("@/pages/DealsPage"));
 const TasksPage = lazy(() => import("@/pages/TasksPage"));
 const ReportsPage = lazy(() => import("@/pages/ReportsPage"));
-const BillingPage = lazy(() => import("@/pages/BillingPage"));
 const DocsPage = lazy(() => import("@/pages/DocsPage"));
 const SettingsLayoutPage = lazy(() => import("@/pages/SettingsLayoutPage"));
 const SettingsProfilePage = lazy(() => import("@/pages/SettingsProfilePage"));
@@ -88,10 +86,8 @@ const routeTree: RouteObject[] = [
               { path: "contacts", element: <ContactsPage /> },
               { path: "contacts/:contactId", element: <ContactDetailPage /> },
               { path: "companies", element: <CompaniesPage /> },
-              { path: "deals", element: <DealsPage /> },
               { path: "tasks", element: <TasksPage /> },
               { path: "reports", element: <ReportsPage /> },
-              { path: "billing", element: <BillingPage /> },
               { path: "docs", element: <DocsPage /> },
               {
                 path: "settings",

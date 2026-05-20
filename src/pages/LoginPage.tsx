@@ -127,10 +127,10 @@ export default function LoginPage() {
         </div>
 
         <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-foreground md:text-[2.25rem]">
-          Qucuci
+          Qcuci
         </h1>
         <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-primary">
-          Laundry admin
+          bersih cepat, wangi melekat
         </p>
 
         <p className="mt-5 max-w-[320px] text-base font-semibold text-foreground">

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+
 import {
   BarChart3,
   BookOpen,
@@ -8,12 +9,12 @@ import {
   CheckSquare,
   ChevronLeft,
   ChevronRight,
-  CreditCard,
   LayoutDashboard,
   Settings,
-  TrendingUp,
   Users,
+  Sparkles,
 } from "lucide-react";
+
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer.jsx";
 import { ROUTES } from "@/router/paths";
@@ -25,131 +26,356 @@ type NavItem = {
   icon: LucideIcon;
 };
 
-/**
- * Layout utama aplikasi (sidebar + navbar + footer).
- * NavLink memakai segment awal agar nested route tetap aktif (mis. /dashboard/analytics).
- */
 export function MainLayout() {
+
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
 
-  const navigation = useMemo<NavItem[]>(
-    () => [
-      { name: "Dashboard", path: ROUTES.DASHBOARD, icon: LayoutDashboard },
-      { name: "Contacts", path: ROUTES.CONTACTS, icon: Users },
-      { name: "Companies", path: ROUTES.COMPANIES, icon: Building2 },
-      { name: "Deals", path: ROUTES.DEALS, icon: TrendingUp },
-      { name: "Tasks", path: ROUTES.TASKS, icon: CheckSquare },
-      { name: "Reports", path: ROUTES.REPORTS, icon: BarChart3 },
-      { name: "Billing", path: ROUTES.BILLING, icon: CreditCard },
-      { name: "Settings", path: ROUTES.SETTINGS, icon: Settings },
-      { name: "Docs", path: ROUTES.DOCS, icon: BookOpen },
-    ],
-    []
-  );
+  const [sidebarOpen,setSidebarOpen] = useState(true);
 
-  useEffect(() => {
-    function checkMobile() {
+  const [isMobile,setIsMobile] = useState(false);
+
+  const navigation = useMemo<NavItem[]>(() => [
+
+    {
+      name:"Dashboard",
+      path:ROUTES.DASHBOARD,
+      icon:LayoutDashboard
+    },
+
+    {
+      name:"Pelanggan",
+      path:ROUTES.CONTACTS,
+      icon:Users
+    },
+
+    {
+      name:"Laundry",
+      path:ROUTES.COMPANIES,
+      icon:Building2
+    },
+
+    {
+      name:"Pesanan",
+      path:ROUTES.TASKS,
+      icon:CheckSquare
+    },
+
+    {
+      name:"Laporan",
+      path:ROUTES.REPORTS,
+      icon:BarChart3
+    },
+
+    {
+      name:"Dokumentasi",
+      path:ROUTES.DOCS,
+      icon:BookOpen
+    },
+
+    {
+      name:"Pengaturan",
+      path:ROUTES.SETTINGS,
+      icon:Settings
+    }
+
+  ],[]);
+
+  useEffect(()=>{
+
+    function checkMobile(){
+
       const mobile = window.innerWidth < 1024;
+
       setIsMobile(mobile);
+
       setSidebarOpen(!mobile);
+
     }
+
     checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
-  const toggleSidebar = () => setSidebarOpen((v) => !v);
-  const closeSidebarOnMobile = () => {
-    if (isMobile) setSidebarOpen(false);
-  };
+    window.addEventListener(
+      "resize",
+      checkMobile
+    );
 
-  function navIsActive(itemPath: string): boolean {
-    if (itemPath === ROUTES.DASHBOARD) {
-      return location.pathname.startsWith(ROUTES.DASHBOARD);
-    }
-    if (itemPath === ROUTES.SETTINGS) {
-      return location.pathname.startsWith(ROUTES.SETTINGS);
-    }
-    if (itemPath === ROUTES.CONTACTS) {
-      return location.pathname.startsWith(ROUTES.CONTACTS);
-    }
-    return location.pathname === itemPath;
+    return ()=>{
+
+      window.removeEventListener(
+        "resize",
+        checkMobile
+      );
+
+    };
+
+  },[]);
+
+  function navIsActive(path:string){
+
+    return location.pathname.startsWith(path);
+
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      {sidebarOpen && isMobile ? (
-        <div
-          onClick={closeSidebarOnMobile}
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          aria-hidden
-        />
-      ) : null}
+
+    <div
+      className="
+      flex
+      h-screen
+      bg-gradient-to-br
+      from-sky-100
+      via-cyan-50
+      to-blue-100
+      "
+    >
 
       <aside
+
         className={cn(
-          "bg-card border-r transition-all duration-300 flex flex-col fixed lg:relative h-full z-50 overflow-hidden",
-          isMobile ? (sidebarOpen ? "w-64" : "w-0") : sidebarOpen ? "w-64" : "w-16",
-          isMobile && !sidebarOpen ? "-translate-x-full" : "translate-x-0"
+
+          `
+          transition-all
+          duration-300
+          shadow-2xl
+          backdrop-blur-lg
+          bg-white/80
+          border-r
+          border-white/30
+          flex
+          flex-col
+          overflow-hidden
+          `,
+
+          sidebarOpen
+          ? "w-64"
+          : "w-20"
+
         )}
+
       >
-        <div className="p-4 border-b flex items-center justify-between">
-          {sidebarOpen ? (
-            <h3 className="text-sm font-semibold tracking-tight text-primary">
-              Laundry Qucuci
-            </h3>
-          ) : null}
+
+        {/* Logo */}
+
+        <div
+          className="
+          p-5
+          border-b
+          flex
+          items-center
+          justify-between
+          "
+        >
+
+          {sidebarOpen && (
+
+            <div
+              className="
+              flex
+              items-center
+              gap-2
+              "
+            >
+
+              <Sparkles
+                className="
+                text-cyan-500
+                "
+              />
+
+              <h1
+                className="
+                font-bold
+                text-xl
+                bg-gradient-to-r
+                from-blue-600
+                to-cyan-500
+                bg-clip-text
+                text-transparent
+                "
+              >
+
+                LaundryQ
+
+              </h1>
+
+            </div>
+
+          )}
 
           <button
-            onClick={toggleSidebar}
-            className={cn(
-              "p-2 hover:bg-accent rounded-md hidden lg:block",
-              !sidebarOpen ? "mx-auto" : ""
-            )}
-            type="button"
-            aria-label="Toggle sidebar width"
+
+            onClick={()=>
+              setSidebarOpen(
+                !sidebarOpen
+              )
+            }
+
+            className="
+            p-2
+            rounded-lg
+            hover:bg-cyan-100
+            transition
+            "
+
           >
-            {!sidebarOpen ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+
+            {
+
+              sidebarOpen
+
+              ?
+
+              <ChevronLeft/>
+
+              :
+
+              <ChevronRight/>
+
+            }
+
           </button>
+
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const active = navIsActive(item.path);
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={closeSidebarOnMobile}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent hover:text-accent-foreground"
-                )}
-              >
-                <Icon size={20} />
-                {sidebarOpen ? <span>{item.name}</span> : null}
-              </NavLink>
-            );
-          })}
+
+        {/* Menu */}
+
+        <nav
+          className="
+          flex-1
+          p-3
+          space-y-2
+          "
+        >
+
+          {
+
+            navigation.map(item=>{
+
+              const Icon = item.icon;
+
+              const active =
+              navIsActive(item.path);
+
+              return(
+
+                <NavLink
+
+                  key={item.path}
+
+                  to={item.path}
+
+                  className={cn(
+
+                    `
+                    flex
+                    items-center
+                    gap-3
+                    px-4
+                    py-3
+                    rounded-xl
+                    transition-all
+                    duration-300
+                    group
+                    `,
+
+                    active
+
+                    ?
+
+                    `
+                    bg-gradient-to-r
+                    from-cyan-500
+                    to-blue-500
+                    text-white
+                    shadow-lg
+                    scale-105
+                    `
+
+                    :
+
+                    `
+                    hover:bg-cyan-100
+                    hover:translate-x-2
+                    hover:shadow-md
+                    `
+
+                  )}
+
+                >
+
+                  <Icon
+
+                    size={20}
+
+                    className="
+                    group-hover:rotate-12
+                    transition-transform
+                    "
+                  />
+
+                  {
+
+                    sidebarOpen &&
+
+                    <span>
+
+                      {item.name}
+
+                    </span>
+
+                  }
+
+                </NavLink>
+
+              );
+
+            })
+
+          }
+
         </nav>
+
       </aside>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Navbar onToggleSidebar={toggleSidebar} />
 
-        <main className="flex-1 overflow-auto">
-          <div className="p-4 md:p-8">
-            <Outlet />
-          </div>
+      {/* Content */}
+
+      <div
+        className="
+        flex-1
+        flex
+        flex-col
+        overflow-hidden
+        "
+      >
+
+        <Navbar
+          onToggleSidebar={
+            ()=>setSidebarOpen(
+              !sidebarOpen
+            )
+          }
+        />
+
+        <main
+          className="
+          flex-1
+          overflow-auto
+          p-6
+          "
+        >
+
+          <Outlet/>
+
         </main>
 
-        <Footer />
+        <Footer/>
+
       </div>
+
     </div>
+
   );
+
 }

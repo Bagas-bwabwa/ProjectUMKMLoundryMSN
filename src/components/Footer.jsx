@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="bg-card border-t py-6 px-4 md:px-8">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <span>© 2025, made with</span>
+          <span>© 2026, made with</span>
           <Heart size={16} className="text-red-500 fill-red-500" />
           <span>by</span>
           <a
@@ -24,7 +24,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-primary hover:underline"
           >
-            ThemeWagon
+            MSN
           </a>
         </div>
 

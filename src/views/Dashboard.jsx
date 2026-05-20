@@ -10,7 +10,14 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { Building2, DollarSign, TrendingUp, Users } from "lucide-react";
+
+import {
+  Users,
+  DollarSign,
+  TrendingUp,
+  Package,
+} from "lucide-react";
+
 import { Card } from "@/components/ui/Card.jsx";
 import { CardContent } from "@/components/ui/CardContent.jsx";
 import { CardHeader } from "@/components/ui/CardHeader.jsx";
@@ -27,197 +34,473 @@ ChartJS.register(
   Filler
 );
 
-const revenueData = {
-  labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+const laundryData = {
+  labels: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
   datasets: [
     {
-      label: "Revenue",
-      data: [185000, 198000, 192000, 225000, 210000, 234567],
-      borderColor: "hsl(207 88% 42%)",
-      backgroundColor: "hsla(207, 88%, 42%, 0.12)",
+      label: "Pesanan Laundry",
+      data: [25, 30, 28, 35, 40, 45],
+      borderColor: "#3b82f6",
+      backgroundColor: "rgba(59,130,246,0.15)",
       tension: 0.4,
       fill: true,
     },
   ],
 };
 
-const revenueOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+
+  animation: {
+    duration: 2000,
+    easing: "easeInOutQuart",
+  },
+
   plugins: {
-    legend: { display: false },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          const value = context.parsed.y;
-          return `Revenue: $${(value / 1000).toFixed(0)}k`;
-        },
-      },
+    legend: {
+      display: false,
     },
   },
+
   scales: {
     y: {
       beginAtZero: true,
-      ticks: {
-        callback: (value) => `$${(Number(value) / 1000).toFixed(0)}k`,
-      },
     },
   },
 };
 
 export function Dashboard() {
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">
-        Ringkasan CRM — konten untuk route indeks{" "}
-        <span className="font-mono">/dashboard</span>.
-      </p>
+    <div
+      className="
+      min-h-screen
+      p-6
+      space-y-6
+      bg-gradient-to-br
+      from-sky-100
+      via-cyan-50
+      to-blue-100
+      "
+    >
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Contacts
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
-          </CardContent>
-        </Card>
+      {/* Header */}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Companies</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">456</div>
-            <p className="text-xs text-muted-foreground">+8% from last month</p>
-          </CardContent>
-        </Card>
+      <div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Deals</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">89</div>
-            <p className="text-xs text-muted-foreground">+23% from last month</p>
-          </CardContent>
-        </Card>
+        <h1
+          className="
+          text-3xl
+          font-bold
+          text-slate-800
+          "
+        >
+          Dashboard Laundry
+        </h1>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$234,567</div>
-            <p className="text-xs text-muted-foreground">+18% from last month</p>
-          </CardContent>
-        </Card>
+        <p className="text-slate-500">
+          Sistem Laundry Management
+        </p>
+
       </div>
 
-      <Card>
+
+      {/* Statistik */}
+
+      <div
+        className="
+        grid
+        gap-5
+        md:grid-cols-2
+        lg:grid-cols-4
+        "
+      >
+
+        {/* Pelanggan */}
+
+        <Card
+          className="
+          group
+          backdrop-blur-md
+          bg-orange-500
+          text-white
+          shadow-lg
+          transition-all
+          duration-300
+          hover:scale-105
+          hover:-translate-y-2
+          hover:shadow-2xl
+          cursor-pointer
+          "
+        >
+
+          <CardHeader
+            className="
+            flex
+            flex-row
+            justify-between
+            items-center
+            "
+          >
+
+            <CardTitle>
+              Total Pelanggan
+            </CardTitle>
+
+            <Users
+              className="
+              h-5
+              w-5
+              transition-transform
+              duration-300
+              group-hover:rotate-12
+              "
+            />
+
+          </CardHeader>
+
+          <CardContent>
+
+            <div className="text-3xl font-bold">
+              245
+            </div>
+
+            <p className="text-sm opacity-90">
+              +15 pelanggan minggu ini
+            </p>
+
+          </CardContent>
+
+        </Card>
+
+
+        {/* Order */}
+
+        <Card
+          className="
+          group
+          bg-blue-500
+          text-white
+          shadow-lg
+          transition-all
+          duration-300
+          hover:scale-105
+          hover:-translate-y-2
+          hover:shadow-2xl
+          cursor-pointer
+          "
+        >
+
+          <CardHeader
+            className="
+            flex
+            flex-row
+            justify-between
+            "
+          >
+
+            <CardTitle>
+              Order Masuk
+            </CardTitle>
+
+            <TrendingUp
+              className="
+              h-5
+              w-5
+              transition-transform
+              duration-300
+              group-hover:rotate-12
+              "
+            />
+
+          </CardHeader>
+
+          <CardContent>
+
+            <div className="text-3xl font-bold">
+              89
+            </div>
+
+            <p className="text-sm">
+              12 sedang diproses
+            </p>
+
+          </CardContent>
+
+        </Card>
+
+
+        {/* Laundry selesai */}
+
+        <Card
+          className="
+          group
+          bg-purple-500
+          text-white
+          shadow-lg
+          transition-all
+          duration-300
+          hover:scale-105
+          hover:-translate-y-2
+          hover:shadow-2xl
+          cursor-pointer
+          "
+        >
+
+          <CardHeader
+            className="
+            flex
+            flex-row
+            justify-between
+            "
+          >
+
+            <CardTitle>
+              Laundry Selesai
+            </CardTitle>
+
+            <Package
+              className="
+              h-5
+              w-5
+              transition-transform
+              duration-300
+              group-hover:rotate-12
+              "
+            />
+
+          </CardHeader>
+
+          <CardContent>
+
+            <div className="text-3xl font-bold">
+              74
+            </div>
+
+            <p className="text-sm">
+              Siap diambil pelanggan
+            </p>
+
+          </CardContent>
+
+        </Card>
+
+
+        {/* Pendapatan */}
+
+        <Card
+          className="
+          group
+          bg-green-500
+          text-white
+          shadow-lg
+          transition-all
+          duration-300
+          hover:scale-105
+          hover:-translate-y-2
+          hover:shadow-2xl
+          cursor-pointer
+          "
+        >
+
+          <CardHeader
+            className="
+            flex
+            flex-row
+            justify-between
+            "
+          >
+
+            <CardTitle>
+              Pendapatan
+            </CardTitle>
+
+            <DollarSign
+              className="
+              h-5
+              w-5
+              transition-transform
+              duration-300
+              group-hover:rotate-12
+              "
+            />
+
+          </CardHeader>
+
+          <CardContent>
+
+            <div className="text-3xl font-bold">
+              Rp3.450.000
+            </div>
+
+            <p className="text-sm">
+              +18% bulan ini
+            </p>
+
+          </CardContent>
+
+        </Card>
+
+      </div>
+
+
+      {/* Grafik */}
+
+      <Card
+        className="
+        bg-white/70
+        backdrop-blur-md
+        shadow-xl
+        "
+      >
+
         <CardHeader>
-          <CardTitle>Revenue Trend</CardTitle>
+
+          <CardTitle>
+            Grafik Pesanan Laundry
+          </CardTitle>
+
         </CardHeader>
+
         <CardContent>
-          <div className="h-[300px]">
-            <Line data={revenueData} options={revenueOptions} />
+
+          <div className="h-[320px]">
+
+            <Line
+              data={laundryData}
+              options={chartOptions}
+            />
+
           </div>
+
         </CardContent>
+
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+
+      {/* Aktivitas dan tugas */}
+
+      <div
+        className="
+        grid
+        gap-5
+        lg:grid-cols-2
+        "
+      >
+
+        <Card
+          className="
+          bg-white/70
+          backdrop-blur-md
+          "
+        >
+
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+
+            <CardTitle>
+              Aktivitas Terbaru
+            </CardTitle>
+
           </CardHeader>
+
           <CardContent>
+
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-primary rounded-full mt-2" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">New contact added</p>
-                  <p className="text-xs text-muted-foreground">
-                    John Doe from Acme Corp
-                  </p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
+
+              {[
+                "Bagas - Laundry 5 Kg",
+                "Order #LDR001 selesai",
+                "Pembayaran Rp75.000 berhasil",
+              ].map((item) => (
+
+                <div
+                  key={item}
+                  className="
+                  p-3
+                  rounded-lg
+                  transition-all
+                  duration-300
+                  hover:bg-blue-100
+                  hover:translate-x-2
+                  cursor-pointer
+                  "
+                >
+
+                  {item}
+
                 </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-primary rounded-full mt-2" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Deal closed</p>
-                  <p className="text-xs text-muted-foreground">
-                    $45,000 deal with Tech Solutions
-                  </p>
-                  <p className="text-xs text-muted-foreground">5 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-primary rounded-full mt-2" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Task completed</p>
-                  <p className="text-xs text-muted-foreground">
-                    Follow-up call with Jane Smith
-                  </p>
-                  <p className="text-xs text-muted-foreground">1 day ago</p>
-                </div>
-              </div>
+
+              ))}
+
             </div>
+
           </CardContent>
+
         </Card>
 
-        <Card>
+
+        <Card
+          className="
+          bg-white/70
+          backdrop-blur-md
+          "
+        >
+
           <CardHeader>
-            <CardTitle>Upcoming Tasks</CardTitle>
+
+            <CardTitle>
+              Tugas Hari Ini
+            </CardTitle>
+
           </CardHeader>
+
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-input"
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Call with prospect</p>
-                  <p className="text-xs text-muted-foreground">Today at 2:00 PM</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-input"
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Send proposal</p>
-                  <p className="text-xs text-muted-foreground">
-                    Tomorrow at 10:00 AM
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-input"
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Review contracts</p>
-                  <p className="text-xs text-muted-foreground">
-                    Friday at 3:00 PM
-                  </p>
-                </div>
-              </div>
+
+            <div className="space-y-3">
+
+              {[
+                "Antar laundry pelanggan",
+                "Setrika pakaian",
+                "Cek stok deterjen",
+                "Ambil laundry pelanggan",
+              ].map((task) => (
+
+                <label
+                  key={task}
+                  className="
+                  flex
+                  gap-3
+                  p-2
+                  rounded-lg
+                  transition-all
+                  duration-300
+                  hover:bg-slate-100
+                  hover:translate-x-2
+                  cursor-pointer
+                  "
+                >
+
+                  <input
+                    type="checkbox"
+                    className="
+                    accent-blue-500
+                    "
+                  />
+
+                  {task}
+
+                </label>
+
+              ))}
+
             </div>
+
           </CardContent>
+
         </Card>
+
       </div>
+
     </div>
   );
 }
-

@@ -27,10 +27,10 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
     console.log("Search:", searchQuery);
   };
 
-  const navigateToBilling = () => {
-    navigate(ROUTES.BILLING);
-    setAccountDropdownOpen(false);
-  };
+  // const navigateToBilling = () => {
+  //   navigate(ROUTES.BILLING);
+  //   setAccountDropdownOpen(false);
+  // };
 
   /** Logout: hapus token lokal lalu ke halaman login (Pertemuan 7 — auth flow). */
   const handleLogout = () => {
@@ -120,14 +120,14 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                     </p>
                   </div>
 
-                  <button
+                  {/* <button
                     onClick={navigateToBilling}
                     className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent"
                     type="button"
                   >
                     <CreditCard size={16} />
                     <span>Billing</span>
-                  </button>
+                  </button> */}
 
                   <button
                     onClick={handleLogout}
