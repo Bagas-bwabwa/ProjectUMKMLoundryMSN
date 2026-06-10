@@ -13,47 +13,28 @@ import { ProtectedRoute } from "@/components/routing/ProtectedRoute";
 import { PageLoading } from "@/components/layout/PageLoading";
 
 /* =========================
-   LAZY PAGES
+   ADMIN PAGES
+========================= */
+
+import DashboardPage from "@/pages/admin/Dashboard";
+import OutletPage from "@/pages/admin/Outlet";
+import EmployeePage from "@/pages/admin/Employee";
+import InvestorPage from "@/pages/admin/Investor";
+import ServicePage from "@/pages/admin/Service";
+import ItemPage from "@/pages/admin/Item";
+import StockPage from "@/pages/admin/Stock";
+import TransactionPage from "@/pages/admin/Transaction";
+import ExpensePage from "@/pages/admin/Expense";
+import ReportPage from "@/pages/admin/Report";
+import CreateTransactionPage from "@/pages/admin/CreateTransaction";
+import TransactionDetailPage from "@/pages/admin/TransactionDetailPage";
+import OutletDetail from "@/pages/admin/OutletDetail";
+
+/* =========================
+   PLACEHOLDER PAGES
 ========================= */
 
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
-
-const DashboardLayoutPage = lazy(
-  () => import("@/pages/DashboardLayoutPage")
-);
-
-const DashboardOverviewPage = lazy(
-  () => import("@/pages/DashboardOverviewPage")
-);
-
-const DashboardAnalyticsPage = lazy(
-  () => import("@/pages/DashboardAnalyticsPage")
-);
-
-const ContactsPage = lazy(
-  () => import("@/pages/ContactsPage")
-);
-
-const ContactDetailPage = lazy(
-  () => import("@/pages/ContactDetailPage")
-);
-
-const FinancialReport = lazy(
-  () => import("@/pages/FinancialReport")
-);
-
-const CompaniesPage = lazy(
-  () => import("@/pages/CompaniesPage")
-);
-
-const TasksPage = lazy(
-  () => import("@/pages/TasksPage")
-);
-
-const DocsPage = lazy(
-  () => import("@/pages/DocsPage")
-);
-
 const SettingsLayoutPage = lazy(
   () => import("@/pages/SettingsLayoutPage")
 );
@@ -72,13 +53,6 @@ const SettingsSecurityPage = lazy(
 
 const NotFoundPage = lazy(
   () => import("@/pages/NotFoundPage")
-);
-const TransactionsPage = lazy(
-  () => import("@/pages/TransactionsPage")
-);
-
-const TransactionDetailPage = lazy(
-  () => import("@/pages/TransactionDetailPage")
 );
 
 /* =========================
@@ -99,6 +73,7 @@ function RootSuspenseLayout() {
 
 function normalizeBasename(base) {
   if (!base || base === "/") return "/";
+
   return base.endsWith("/")
     ? base.slice(0, -1)
     : base;
@@ -146,9 +121,10 @@ const routeTree = [
             children: [
               {
                 index: true,
+
                 element: (
                   <Navigate
-                    to="dashboard"
+                    to="/dashboard"
                     replace
                   />
                 ),
@@ -156,70 +132,64 @@ const routeTree = [
 
               {
                 path: "dashboard",
-
-                element: (
-                  <DashboardLayoutPage />
-                ),
-
-                children: [
-                  {
-                    index: true,
-                    element: (
-                      <DashboardOverviewPage />
-                    ),
-                  },
-
-                  {
-                    path: "analytics",
-                    element: (
-                      <DashboardAnalyticsPage />
-                    ),
-                  },
-                ],
+                element: <DashboardPage />,
               },
 
               {
-                path: "contacts",
-                element: <ContactsPage />,
+                path: "outlets",
+                element: <OutletPage />,
+              },
+              {
+                path: "outlets/:id",
+                element: <OutletDetail />,
               },
 
               {
-                path: "customers",
-                element: <FinancialReport />,
+                path: "employees",
+                element: <EmployeePage />,
               },
 
               {
-                path: "contacts/:contactId",
-                element: <ContactDetailPage />,
+                path: "investors",
+                element: <InvestorPage />,
+              },
+              {
+                path: "services",
+                element: <ServicePage />,
+              },
+
+
+              {
+                path: "items",
+                element: <ItemPage />,
               },
 
               {
-                path: "companies",
-                element: <CompaniesPage />,
+                path: "stocks",
+                element: <StockPage />,
+              },
+
+              {
+                path: "transactions",
+                element: <TransactionPage />,
               },
               {
-  path: "transactions",
-  element: <TransactionsPage />,
-},
-
-{
-  path: "transactions/:date",
-  element: <TransactionDetailPage />,
-},
+                path: "transactions/:id",
+                element: <TransactionDetailPage />,
+              },
+              {
+                path: "transactions/create",
+                element: <CreateTransactionPage />,
+              },
 
               {
-                path: "tasks",
-                element: <TasksPage />,
+                path: "expenses",
+                element: <ExpensePage />,
               },
 
               {
                 path: "reports",
-                element: <FinancialReport />,
-              },
-
-              {
-                path: "docs",
-                element: <DocsPage />,
+                element: <ReportPage />,
               },
 
               {
