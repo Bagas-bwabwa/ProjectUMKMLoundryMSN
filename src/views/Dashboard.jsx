@@ -1,4 +1,5 @@
 import { Line } from "react-chartjs-2";
+import { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -16,6 +17,8 @@ import {
   DollarSign,
   TrendingUp,
   Package,
+  Loader,
+  AlertCircle,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/Card.jsx";
@@ -34,43 +37,133 @@ ChartJS.register(
   Filler
 );
 
-const laundryData = {
-  labels: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
-  datasets: [
-    {
-      label: "Pesanan Laundry",
-      data: [25, 30, 28, 35, 40, 45],
-      borderColor: "#3b82f6",
-      backgroundColor: "rgba(59,130,246,0.15)",
-      tension: 0.4,
-      fill: true,
-    },
-  ],
-};
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-
-  animation: {
-    duration: 2000,
-    easing: "easeInOutQuart",
-  },
-
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
-
-  scales: {
-    y: {
-      beginAtZero: true,
-    },
-  },
-};
-
+/**
+ * Materi Pertemuan 11:
+ * - useEffect dengan dependencies state untuk fetch dashboard data
+ * - Multiple state untuk berbagai data yang berbeda
+ * - Loading dan error handling
+ */
 export function Dashboard() {
+  const [dashboardData, setDashboardData] = useState({
+    totalCustomers: 245,
+    incomingOrders: 89,
+    completedLaundry: 74,
+    revenue: "Rp3.450.000",
+    chartData: {
+      labels: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+      datasets: [
+        {
+          label: "Pesanan Laundry",
+          data: [25, 30, 28, 35, 40, 45],
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59,130,246,0.15)",
+          tension: 0.4,
+          fill: true,
+        },
+      ],
+    },
+    activities: [
+      "Bagas - Laundry 5 Kg",
+      "Order #LDR001 selesai",
+      "Pembayaran Rp75.000 berhasil",
+    ],
+    tasks: [
+      "Antar laundry pelanggan",
+      "Setrika pakaian",
+      "Cek stok deterjen",
+      "Ambil laundry pelanggan",
+    ],
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [checkedTasks, setCheckedTasks] = useState({});
+
+  /**
+   * useEffect untuk fetch dashboard data
+   * Dependencies: [] = hanya run saat component mount
+   */
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Simulasi API delay
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
+        // Bisa diganti dengan actual API call:
+        // const response = await fetch('/api/dashboard');
+        // const data = await response.json();
+        // setDashboardData(data);
+
+        setDashboardData((prev) => ({
+          ...prev,
+          // Update dengan data dari API jika diperlukan
+        }));
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load dashboard data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []); // Empty array = fetch hanya saat component mount
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+
+    animation: {
+      duration: 2000,
+      easing: "easeInOutQuart",
+    },
+
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  };
+
+  const handleTaskToggle = (index) => {
+    setCheckedTasks((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <AlertCircle className="h-8 w-8 mx-auto text-destructive" />
+          <p className="text-destructive font-semibold">Error</p>
+          <p className="text-muted-foreground text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="
@@ -162,7 +255,7 @@ export function Dashboard() {
           <CardContent>
 
             <div className="text-3xl font-bold">
-              245
+              {dashboardData.totalCustomers}
             </div>
 
             <p className="text-sm opacity-90">
@@ -218,7 +311,7 @@ export function Dashboard() {
           <CardContent>
 
             <div className="text-3xl font-bold">
-              89
+              {dashboardData.incomingOrders}
             </div>
 
             <p className="text-sm">
@@ -274,7 +367,7 @@ export function Dashboard() {
           <CardContent>
 
             <div className="text-3xl font-bold">
-              74
+              {dashboardData.completedLaundry}
             </div>
 
             <p className="text-sm">
@@ -330,7 +423,7 @@ export function Dashboard() {
           <CardContent>
 
             <div className="text-3xl font-bold">
-              Rp3.450.000
+              {dashboardData.revenue}
             </div>
 
             <p className="text-sm">
@@ -367,7 +460,7 @@ export function Dashboard() {
           <div className="h-[320px]">
 
             <Line
-              data={laundryData}
+              data={dashboardData.chartData}
               options={chartOptions}
             />
 
@@ -407,11 +500,7 @@ export function Dashboard() {
 
             <div className="space-y-4">
 
-              {[
-                "Bagas - Laundry 5 Kg",
-                "Order #LDR001 selesai",
-                "Pembayaran Rp75.000 berhasil",
-              ].map((item) => (
+              {dashboardData.activities.map((item) => (
 
                 <div
                   key={item}
@@ -458,12 +547,7 @@ export function Dashboard() {
 
             <div className="space-y-3">
 
-              {[
-                "Antar laundry pelanggan",
-                "Setrika pakaian",
-                "Cek stok deterjen",
-                "Ambil laundry pelanggan",
-              ].map((task) => (
+              {dashboardData.tasks.map((task, index) => (
 
                 <label
                   key={task}
@@ -482,12 +566,22 @@ export function Dashboard() {
 
                   <input
                     type="checkbox"
+                    checked={checkedTasks[index] || false}
+                    onChange={() => handleTaskToggle(index)}
                     className="
                     accent-blue-500
                     "
                   />
 
-                  {task}
+                  <span
+                    className={
+                      checkedTasks[index]
+                        ? "line-through text-slate-500"
+                        : ""
+                    }
+                  >
+                    {task}
+                  </span>
 
                 </label>
 

@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "customer": "Budi Santoso",
+    "phone": "081234567890",
+    "service": "Cuci Kering",
+    "weight": 5,
+    "status": "Selesai",
+    "date": "2026-06-09",
+    "total": 35000
+  },
+  {
+    "id": 2,
+    "customer": "Siti Aminah",
+    "phone": "081298765432",
+    "service": "Cuci Setrika",
+    "weight": 7,
+    "status": "Selesai",
+    "date": "2026-06-09",
+    "total": 56000
+  },
+  {
+    "id": 3,
+    "customer": "Andi Wijaya",
+    "phone": "081345678901",
+    "service": "Setrika Saja",
+    "weight": 4,
+    "status": "Diproses",
+    "date": "2026-06-09",
+    "total": 20000
+  },
+  {
+    "id": 4,
+    "customer": "Rina Marlina",
+    "phone": "081355566677",
+    "service": "Cuci Kering",
+    "weight": 8,
+    "status": "Selesai",
+    "date": "2026-06-08",
+    "total": 56000
+  },
+  {
+    "id": 5,
+    "customer": "Dedi Saputra",
+    "phone": "081377788899",
+    "service": "Express",
+    "weight": 3,
+    "status": "Selesai",
+    "date": "2026-06-08",
+    "total": 45000
+  },
+  {
+    "id": 6,
+    "customer": "Maya Putri",
+    "phone": "081399900011",
+    "service": "Cuci Setrika",
+    "weight": 6,
+    "status": "Diproses",
+    "date": "2026-06-08",
+    "total": 48000
+  },
+  {
+    "id": 7,
+    "customer": "Agus Salim",
+    "phone": "081322233344",
+    "service": "Express",
+    "weight": 5,
+    "status": "Selesai",
+    "date": "2026-06-07",
+    "total": 75000
+  },
+  {
+    "id": 8,
+    "customer": "Nina Karlina",
+    "phone": "081344455566",
+    "service": "Cuci Kering",
+    "weight": 10,
+    "status": "Selesai",
+    "date": "2026-06-07",
+    "total": 70000
+  },
+  {
+    "id": 9,
+    "customer": "Rudi Hartono",
+    "phone": "081366677788",
+    "service": "Setrika Saja",
+    "weight": 3,
+    "status": "Selesai",
+    "date": "2026-06-07",
+    "total": 15000
+  },
+  {
+    "id": 10,
+    "customer": "Fitri Handayani",
+    "phone": "081388899900",
+    "service": "Cuci Setrika",
+    "weight": 12,
+    "status": "Selesai",
+    "date": "2026-06-06",
+    "total": 96000
+  }
+]

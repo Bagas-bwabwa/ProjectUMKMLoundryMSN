@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import type { LucideIcon } from "lucide-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 import {
@@ -20,12 +19,6 @@ import { Footer } from "@/components/Footer.jsx";
 import { ROUTES } from "@/router/paths";
 import { cn } from "@/lib/utils.js";
 
-type NavItem = {
-  name: string;
-  path: string;
-  icon: LucideIcon;
-};
-
 export function MainLayout() {
 
   const location = useLocation();
@@ -34,7 +27,7 @@ export function MainLayout() {
 
   const [isMobile,setIsMobile] = useState(false);
 
-  const navigation = useMemo<NavItem[]>(() => [
+  const navigation = useMemo(() => [
 
     {
       name:"Dashboard",
@@ -42,11 +35,11 @@ export function MainLayout() {
       icon:LayoutDashboard
     },
 
-    {
-      name:"Pelanggan",
-      path:ROUTES.CONTACTS,
-      icon:Users
-    },
+      {
+    name:"Pelanggan",
+    path:"/customers",
+    icon:Users
+  },
 
     {
       name:"Laundry",
@@ -110,7 +103,7 @@ export function MainLayout() {
 
   },[]);
 
-  function navIsActive(path:string){
+  function navIsActive(path){
 
     return location.pathname.startsWith(path);
 

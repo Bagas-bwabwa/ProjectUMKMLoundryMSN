@@ -10,7 +10,7 @@ export default function DashboardLayoutPage() {
   const tabs = [
     { label: "Overview", to: ROUTES.DASHBOARD, end: true },
     { label: "Analytics", to: ROUTES.DASHBOARD_ANALYTICS, end: true },
-  ] as const;
+  ];
 
   return (
     <div className="space-y-6">

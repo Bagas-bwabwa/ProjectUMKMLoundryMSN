@@ -6,17 +6,12 @@ const TOKEN_KEY = "pertemuan7_auth_token";
 export const APP_LOGIN_EMAIL = "qucucy@gmail.com";
 export const APP_LOGIN_PASSWORD = "qucucy123";
 
-export type LoginCredentials = {
-  email: string;
-  password: string;
-};
-
 /**
  * Login akun Laundry Qucuci: validasi di aplikasi.
  * Panggilan Axios ke Reqres bersifat tambahan (demo HTTP); jika jaringan diblokir
  * atau API error, login tetap berhasil selama email/password cocok.
  */
-export async function login(credentials: LoginCredentials): Promise<string> {
+export async function login(credentials) {
   const emailOk =
     credentials.email.trim().toLowerCase() === APP_LOGIN_EMAIL.toLowerCase();
   const passwordOk = credentials.password === APP_LOGIN_PASSWORD;
@@ -40,14 +35,14 @@ export async function login(credentials: LoginCredentials): Promise<string> {
   return token;
 }
 
-export function logout(): void {
+export function logout() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-export function getStoredToken(): string | null {
+export function getStoredToken() {
   return localStorage.getItem(TOKEN_KEY);
 }
 
-export function isAuthenticated(): boolean {
+export function isAuthenticated() {
   return Boolean(getStoredToken());
 }

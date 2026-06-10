@@ -7,15 +7,15 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   DASHBOARD_ANALYTICS: "/dashboard/analytics",
   CONTACTS: "/contacts",
-  contactDetail: (id: string) => `/contacts/${encodeURIComponent(id)}`,
+  contactDetail: (id) => `/contacts/${encodeURIComponent(id)}`,
   COMPANIES: "/companies",
   // DEALS: "/deals",
   TASKS: "/tasks",
-  REPORTS: "/reports",
+  REPORTS: "/transactions",
   SETTINGS: "/settings",
   SETTINGS_PROFILE: "/settings/profile",
   SETTINGS_NOTIFICATIONS: "/settings/notifications",
   SETTINGS_SECURITY: "/settings/security",
   DOCS: "/docs",
   HOME_REDIRECT: "/dashboard",
-} as const;
+};

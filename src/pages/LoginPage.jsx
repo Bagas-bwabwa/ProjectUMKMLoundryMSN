@@ -1,4 +1,3 @@
-import type { FormEvent } from "react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -9,16 +8,8 @@ import {
   login as loginRequest,
 } from "@/services/authService";
 
-type LocationState = { from?: { pathname?: string } };
-
-/** Banner di atas field — loading (abu) atau error (merah muda), mengikuti pola UI referensi. */
-type LoginBanner =
-  | null
-  | { kind: "loading" }
-  | { kind: "error"; message: string };
-
 /** Logo statis dari folder `public` — cocok dengan basename deploy GitHub Pages. */
-function logoSrc(): string {
+function logoSrc() {
   const base = import.meta.env.BASE_URL;
   return `${base}logo-qucuci.png`;
 }
@@ -38,7 +29,7 @@ function CredentialWarningIcon() {
   );
 }
 
-function LoginStatusBanner({ banner }: { banner: LoginBanner }) {
+function LoginStatusBanner({ banner }) {
   if (!banner) return null;
 
   if (banner.kind === "loading") {
@@ -73,12 +64,12 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const from =
-    (location.state as LocationState | undefined)?.from?.pathname ??
+    location.state?.from?.pathname ??
     ROUTES.HOME_REDIRECT;
 
   const [email, setEmail] = useState(APP_LOGIN_EMAIL);
   const [password, setPassword] = useState(APP_LOGIN_PASSWORD);
-  const [banner, setBanner] = useState<LoginBanner>(null);
+  const [banner, setBanner] = useState(null);
 
   const isLoading = banner?.kind === "loading";
 
@@ -86,7 +77,7 @@ export default function LoginPage() {
     setBanner((b) => (b?.kind === "error" ? null : b));
   }
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const em = email.trim();

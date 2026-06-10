@@ -1,15 +1,6 @@
 /** Data kontak bersama untuk daftar + halaman dinamis /contacts/:contactId */
 
-export type ContactRecord = {
-  id: string;
-  initials: string;
-  name: string;
-  role: string;
-  email: string;
-  phone: string;
-};
-
-export const CONTACTS: ContactRecord[] = [
+export const CONTACTS = [
   {
     id: "john-doe",
     initials: "JD",

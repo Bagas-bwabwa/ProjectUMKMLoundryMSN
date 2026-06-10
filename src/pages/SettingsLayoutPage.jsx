@@ -6,7 +6,7 @@ const tabs = [
   { label: "Profile", to: ROUTES.SETTINGS_PROFILE },
   { label: "Notifications", to: ROUTES.SETTINGS_NOTIFICATIONS },
   { label: "Security", to: ROUTES.SETTINGS_SECURITY },
-] as const;
+];
 
 /** Parent route /settings — anak-anak dirender lewat <Outlet />. */
 export default function SettingsLayoutPage() {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronDown,
@@ -11,17 +11,13 @@ import {
 import { ROUTES } from "@/router/paths";
 import { logout as authLogout } from "@/services/authService";
 
-export type NavbarProps = {
-  onToggleSidebar: () => void;
-};
-
-export function Navbar({ onToggleSidebar }: NavbarProps) {
+export function Navbar({ onToggleSidebar }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef(null);
 
-  const handleSearch = (e: FormEvent) => {
+  const handleSearch = (e) => {
     e.preventDefault();
     // eslint-disable-next-line no-console
     console.log("Search:", searchQuery);
@@ -40,7 +36,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
   };
 
   useEffect(() => {
-    function onDocMouseDown(e: MouseEvent) {
+    function onDocMouseDown(e) {
       if (!accountDropdownOpen) return;
       if (
         dropdownRef.current &&
