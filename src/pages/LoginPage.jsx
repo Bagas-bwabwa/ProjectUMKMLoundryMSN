@@ -5,6 +5,7 @@ import { ROUTES } from "@/router/paths";
 import {
   APP_LOGIN_EMAIL,
   APP_LOGIN_PASSWORD,
+  DEMO_ACCOUNTS,
   login as loginRequest,
 } from "@/services/authService";
 
@@ -184,7 +185,18 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="mt-8 text-center text-[11px] leading-relaxed text-muted-foreground">
+      <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 text-left">
+        <p className="text-xs font-semibold text-slate-600 mb-2">Akun demo:</p>
+        <ul className="text-[11px] text-slate-500 space-y-1">
+          {DEMO_ACCOUNTS.map((acc) => (
+            <li key={acc.email}>
+              <span className="font-medium capitalize">{acc.role}</span>: {acc.email} / {acc.password}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
         © {year} Qucuci Management · Panel laundry terpusat
       </p>
     </div>

@@ -16,5 +16,8 @@ export const ROUTES = {
   TRANSACTIONS: "/transactions",
   EXPENSES: "/expenses",
   REPORTS: "/reports",
+  DAILY_REPORTS: "/daily-reports",
+  SALARY: "/salary",
+  MATERIALS: "/materials",
   SETTINGS: "/settings",
 };

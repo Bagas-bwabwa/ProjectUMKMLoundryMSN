@@ -7,34 +7,12 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { outlets as outletData } from "@/data/laundryData";
 
 export default function Outlet() {
 
   const [search, setSearch] = useState("");
-
-  const outlets = [
-    {
-      id: 1,
-      nama: "Laundry Panam",
-      kota: "Pekanbaru",
-      telepon: "08123456789",
-      status: "Aktif",
-    },
-    {
-      id: 2,
-      nama: "Laundry Arengka",
-      kota: "Pekanbaru",
-      telepon: "08123456788",
-      status: "Aktif",
-    },
-    {
-      id: 3,
-      nama: "Laundry Marpoyan",
-      kota: "Pekanbaru",
-      telepon: "08123456787",
-      status: "Aktif",
-    },
-  ];
+  const outlets = outletData;
 
   const filteredOutlet = outlets.filter((outlet) =>
     outlet.nama

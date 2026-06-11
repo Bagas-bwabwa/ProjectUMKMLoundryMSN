@@ -29,6 +29,9 @@ import ReportPage from "@/pages/admin/Report";
 import CreateTransactionPage from "@/pages/admin/CreateTransaction";
 import TransactionDetailPage from "@/pages/admin/TransactionDetailPage";
 import OutletDetail from "@/pages/admin/OutletDetail";
+import DailyReportPage from "@/pages/admin/DailyReport";
+import SalaryPage from "@/pages/admin/Salary";
+import MaterialUsagePage from "@/pages/admin/MaterialUsage";
 
 /* =========================
    PLACEHOLDER PAGES
@@ -190,6 +193,21 @@ const routeTree = [
               {
                 path: "reports",
                 element: <ReportPage />,
+              },
+
+              {
+                path: "daily-reports",
+                element: <DailyReportPage />,
+              },
+
+              {
+                path: "salary",
+                element: <SalaryPage />,
+              },
+
+              {
+                path: "materials",
+                element: <MaterialUsagePage />,
               },
 
               {

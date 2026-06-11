@@ -9,10 +9,11 @@ import {
   User,
 } from "lucide-react";
 import { ROUTES } from "@/router/paths";
-import { logout as authLogout } from "@/services/authService";
+import { getCurrentUser, logout as authLogout } from "@/services/authService";
 
 export function Navbar({ onToggleSidebar }) {
   const navigate = useNavigate();
+  const user = getCurrentUser();
   const [searchQuery, setSearchQuery] = useState("");
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -102,7 +103,7 @@ export function Navbar({ onToggleSidebar }) {
                   <User size={18} />
                 </div>
                 <span className="hidden sm:block text-sm font-medium">
-                  Qucuci
+                  {user?.name ?? "Qucuci"}
                 </span>
                 <ChevronDown size={16} className="hidden sm:block" />
               </button>
@@ -110,9 +111,9 @@ export function Navbar({ onToggleSidebar }) {
               {accountDropdownOpen ? (
                 <div className="absolute right-0 mt-2 w-56 bg-card border rounded-md shadow-lg py-1 z-50">
                   <div className="px-4 py-3 border-b">
-                    <p className="text-sm font-medium">Laundry Qucuci</p>
-                    <p className="text-xs text-muted-foreground">
-                      qucucy@gmail.com
+                    <p className="text-sm font-medium">{user?.name ?? "Laundry Qucuci"}</p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {user?.role ?? "admin"} · {user?.email ?? "qucucy@gmail.com"}
                     </p>
                   </div>
 

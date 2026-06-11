@@ -6,43 +6,20 @@ import {
   Eye,
   Printer,
 } from "lucide-react";
+import { transactions as txData, getDashboardStats, formatRupiah } from "@/data/laundryData";
+import { getCurrentUser } from "@/services/authService";
+import { ROUTES } from "@/router/paths";
 
 export default function TransactionPage() {
 
   const [search, setSearch] = useState("");
+  const user = getCurrentUser();
+  const stats = getDashboardStats();
 
-  const transactions = [
-    {
-      id: 1,
-      invoice: "INV-001",
-      customer: "Ahmad",
-      outlet: "Laundry Panam",
-      service: "Cuci Setrika",
-      weight: "5 Kg",
-      total: 45000,
-      status: "Diproses",
-    },
-    {
-      id: 2,
-      invoice: "INV-002",
-      customer: "Budi",
-      outlet: "Laundry Arengka",
-      service: "Express",
-      weight: "3 Kg",
-      total: 45000,
-      status: "Selesai",
-    },
-    {
-      id: 3,
-      invoice: "INV-003",
-      customer: "Siti",
-      outlet: "Laundry Marpoyan",
-      service: "Cuci Kering",
-      weight: "7 Kg",
-      total: 56000,
-      status: "Menunggu",
-    },
-  ];
+  const transactions = txData.filter((item) => {
+    if (user?.role === "kasir") return item.outlet === user.outlet;
+    return true;
+  });
 
   const filteredData = transactions.filter((item) =>
     item.customer
@@ -62,6 +39,9 @@ export default function TransactionPage() {
 
       case "Menunggu":
         return "bg-yellow-100 text-yellow-700";
+
+      case "Dibatalkan":
+        return "bg-red-100 text-red-700";
 
       default:
         return "bg-slate-100 text-slate-700";
@@ -91,7 +71,7 @@ export default function TransactionPage() {
         </div>
 
         <Link
-  to="/transactions/create"
+  to={`${ROUTES.TRANSACTIONS}/create`}
   className="
   flex items-center gap-2
   bg-gradient-to-r
@@ -120,7 +100,7 @@ export default function TransactionPage() {
             Total Transaksi
           </p>
           <h2 className="text-3xl font-bold">
-            125
+            {stats.totalTransaksi}
           </h2>
         </div>
 
@@ -129,7 +109,7 @@ export default function TransactionPage() {
             Sedang Diproses
           </p>
           <h2 className="text-3xl font-bold text-blue-600">
-            18
+            {stats.transaksiDiproses}
           </h2>
         </div>
 
@@ -138,7 +118,7 @@ export default function TransactionPage() {
             Selesai Hari Ini
           </p>
           <h2 className="text-3xl font-bold text-green-600">
-            32
+            {stats.selesaiHariIni}
           </h2>
         </div>
 
@@ -266,11 +246,11 @@ export default function TransactionPage() {
                 </td>
 
                 <td className="p-4">
-                  {item.weight}
+                  {item.weight} Kg
                 </td>
 
                 <td className="p-4">
-                  Rp {item.total.toLocaleString("id-ID")}
+                  {formatRupiah(item.total)}
                 </td>
 
                 <td className="p-4">
