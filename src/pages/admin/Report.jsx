@@ -1,42 +1,100 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Navigate } from "react-router-dom";
 import {
-  BarChart3,
-  TrendingUp,
-  Wallet,
-  Receipt,
-  Download,
+  BarChart3, TrendingUp, Wallet, Receipt, Download, FileSpreadsheet, Search,
 } from "lucide-react";
 import { RevenueBarChart } from "@/components/charts/RevenueChart";
+import { useLocalData, getLocalData } from "@/hooks/useLocalData";
 import {
-  getOutletReport,
-  getOutletReportByOutlets,
-  getInvestorById,
-  calcBagiHasil,
-  getInvestorShare,
-  monthlyRevenue,
+  transactions as initialTx,
+  expenses as initialExpenses,
   formatRupiah,
 } from "@/data/laundryData";
-import { getCurrentUser, getInvestedOutlets } from "@/services/authService";
+import { CRUD_CONFIGS } from "@/data/pageConfigs";
+import { getCurrentUser } from "@/services/authService";
+import {
+  buildFinancialSummary,
+  getDateRange,
+  getLayananLabel,
+  getQtyLabel,
+  groupByDate,
+  normalizeTransaction,
+} from "@/utils/reportUtils";
+import { exportToExcel, exportToPDF, tableToHtml } from "@/utils/exportUtils";
+import { ROUTES } from "@/router/paths";
+
+const REPORT_COLUMNS = [
+  { label: "ID", getValue: (r) => r.invoice },
+  { label: "Pelanggan", getValue: (r) => r.customer },
+  { label: "Tanggal", getValue: (r) => r.tanggal },
+  { label: "Jenis", getValue: (r) => r.layananType },
+  { label: "Layanan", getValue: (r) => getLayananLabel(r) },
+  { label: "Berat/Qty", getValue: (r) => String(getQtyLabel(r)) },
+  { label: "Subtotal", getValue: (r) => r.subtotal },
+  { label: "Diskon", getValue: (r) => r.diskon },
+  { label: "Total", getValue: (r) => r.total },
+  { label: "Metode Bayar", getValue: (r) => r.metodePembayaran },
+  { label: "Status Bayar", getValue: (r) => r.paymentStatus },
+  { label: "Kasir", getValue: (r) => r.kasir },
+  { label: "Outlet", getValue: (r) => r.outlet },
+];
 
 export default function ReportPage() {
-  const [periode, setPeriode] = useState("bulanan");
   const user = getCurrentUser();
-  const isInvestor = user?.role === "investor";
-  const investedOutlets = getInvestedOutlets();
-  const investorRecord = isInvestor ? getInvestorById(user?.investorId) : null;
+  if (user?.role === "investor") {
+    return <Navigate to={ROUTES.INVESTOR_REPORTS} replace />;
+  }
 
-  const laporanOutlet = isInvestor
-    ? getOutletReportByOutlets(investedOutlets)
-    : getOutletReport();
+  const { data: txData } = useLocalData("transactions", initialTx);
+  const { data: expData } = useLocalData("expenses", initialExpenses);
+  const outlets = getLocalData(CRUD_CONFIGS.outlets.storageKey, CRUD_CONFIGS.outlets.initialData);
+  const kasirList = getLocalData("kasirAccounts", CRUD_CONFIGS.kasirAccounts.initialData);
 
-  const totalPendapatan = laporanOutlet.reduce((a, b) => a + b.pendapatan, 0);
-  const totalPengeluaran = laporanOutlet.reduce((a, b) => a + b.pengeluaran, 0);
-  const labaBersih = totalPendapatan - totalPengeluaran;
-  const bagiHasil = isInvestor
-    ? investorRecord
-      ? [{ ...investorRecord, bagiHasil: calcBagiHasil(labaBersih, investorRecord.persentase) }]
-      : []
-    : getInvestorShare(labaBersih);
+  const [periode, setPeriode] = useState("bulanan");
+  const [filterOutlet, setFilterOutlet] = useState("");
+  const [filterKasir, setFilterKasir] = useState("");
+  const [filterCustomer, setFilterCustomer] = useState("");
+  const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  const periodRange = useMemo(() => getDateRange(periode), [periode]);
+  const effectiveFrom = dateFrom || periodRange.dateFrom;
+  const effectiveTo = dateTo || periodRange.dateTo;
+
+  const filters = useMemo(() => ({
+    dateFrom: effectiveFrom,
+    dateTo: effectiveTo,
+    outlet: user?.role === "kasir" ? user.outlet : filterOutlet || undefined,
+    kasir: filterKasir || undefined,
+    customer: filterCustomer || undefined,
+    search: search || undefined,
+  }), [effectiveFrom, effectiveTo, filterOutlet, filterKasir, filterCustomer, search, user]);
+
+  const summary = useMemo(
+    () => buildFinancialSummary(txData, expData, filters),
+    [txData, expData, filters]
+  );
+
+  const rekapHarian = useMemo(() => groupByDate(summary.transactions), [summary.transactions]);
+
+  const chartLabels = rekapHarian.map((d) => d.tanggal.slice(5));
+  const chartPendapatan = rekapHarian.map((d) => d.pendapatan);
+
+  function handleExportPDF() {
+    exportToPDF(
+      `Laporan Keuangan — ${periode}`,
+      tableToHtml(summary.transactions.map(normalizeTransaction), REPORT_COLUMNS)
+    );
+  }
+
+  function handleExportExcel() {
+    exportToExcel(
+      summary.transactions.map(normalizeTransaction),
+      REPORT_COLUMNS,
+      `laporan-keuangan-${periode}`
+    );
+  }
 
   return (
     <div id="laporan-print">
@@ -44,153 +102,143 @@ export default function ReportPage() {
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Laporan Keuangan</h1>
           <p className="text-slate-500">
-            {isInvestor
-              ? `Laporan outlet investasi Anda: ${investedOutlets.join(", ")}`
-              : "Ringkasan seluruh aktivitas bisnis laundry"}
+            {user?.role === "kasir"
+              ? `Laporan outlet ${user.outlet}`
+              : "Detail transaksi & rekap keuangan"}
           </p>
         </div>
-        <div className="flex gap-3">
-          <select
-            value={periode}
-            onChange={(e) => setPeriode(e.target.value)}
-            className="border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-cyan-400"
-          >
-            <option value="harian">Harian</option>
-            <option value="mingguan">Mingguan</option>
-            <option value="bulanan">Bulanan</option>
-          </select>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-3 rounded-xl shadow-lg hover:scale-105 transition"
-          >
-            <Download size={18} />
-            Export PDF
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={handleExportPDF}
+            className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-3 rounded-xl shadow-lg text-sm">
+            <Download size={16} /> Export PDF
+          </button>
+          <button type="button" onClick={handleExportExcel}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-3 rounded-xl shadow-lg text-sm">
+            <FileSpreadsheet size={16} /> Export Excel
           </button>
         </div>
       </div>
 
-      <div className="hidden print:block mb-6">
-        <h1 className="text-2xl font-bold">Laporan Keuangan LaundryMSN</h1>
-        <p className="text-sm capitalize">Periode: {periode}</p>
+      <div className="bg-white rounded-2xl shadow-md p-4 mb-6 print:hidden space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <select value={periode} onChange={(e) => setPeriode(e.target.value)}
+            className="border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-cyan-400">
+            <option value="harian">Rekap Harian</option>
+            <option value="mingguan">Rekap Mingguan</option>
+            <option value="bulanan">Rekap Bulanan</option>
+            <option value="tahunan">Rekap Tahunan</option>
+          </select>
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+            className="border rounded-xl px-4 py-3" placeholder="Dari tanggal" />
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+            className="border rounded-xl px-4 py-3" placeholder="Sampai tanggal" />
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-3.5 text-slate-400" />
+            <input type="text" placeholder="Cari transaksi..."
+              value={search} onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-3 border rounded-xl" />
+          </div>
+        </div>
+        {user?.role !== "kasir" && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <select value={filterOutlet} onChange={(e) => setFilterOutlet(e.target.value)}
+              className="border rounded-xl px-4 py-3">
+              <option value="">Semua Outlet</option>
+              {outlets.map((o) => <option key={o.id} value={o.nama}>{o.nama}</option>)}
+            </select>
+            <select value={filterKasir} onChange={(e) => setFilterKasir(e.target.value)}
+              className="border rounded-xl px-4 py-3">
+              <option value="">Semua Kasir</option>
+              {kasirList.map((k) => <option key={k.id} value={k.nama}>{k.nama}</option>)}
+            </select>
+            <input type="text" placeholder="Filter pelanggan..."
+              value={filterCustomer} onChange={(e) => setFilterCustomer(e.target.value)}
+              className="border rounded-xl px-4 py-3" />
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
         <div className="bg-white p-5 rounded-2xl shadow-md">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-slate-500">Pendapatan</p>
-              <h2 className="text-2xl font-bold text-green-600">
-                {formatRupiah(totalPendapatan)}
-              </h2>
-            </div>
-            <TrendingUp className="text-green-500" />
-          </div>
+          <p className="text-slate-500">Pendapatan</p>
+          <h2 className="text-2xl font-bold text-green-600">{formatRupiah(summary.pendapatan)}</h2>
         </div>
         <div className="bg-white p-5 rounded-2xl shadow-md">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-slate-500">Pengeluaran</p>
-              <h2 className="text-2xl font-bold text-red-600">
-                {formatRupiah(totalPengeluaran)}
-              </h2>
-            </div>
-            <Wallet className="text-red-500" />
-          </div>
+          <p className="text-slate-500">Pengeluaran</p>
+          <h2 className="text-2xl font-bold text-red-600">{formatRupiah(summary.pengeluaran)}</h2>
         </div>
         <div className="bg-white p-5 rounded-2xl shadow-md">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-slate-500">Laba Bersih</p>
-              <h2 className="text-2xl font-bold text-cyan-600">
-                {formatRupiah(labaBersih)}
-              </h2>
-            </div>
-            <BarChart3 className="text-cyan-500" />
-          </div>
+          <p className="text-slate-500">Laba Bersih</p>
+          <h2 className="text-2xl font-bold text-cyan-600">{formatRupiah(summary.labaBersih)}</h2>
         </div>
         <div className="bg-white p-5 rounded-2xl shadow-md">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-slate-500">Periode</p>
-              <h2 className="text-2xl font-bold capitalize">{periode}</h2>
-            </div>
-            <Receipt className="text-blue-500" />
-          </div>
+          <p className="text-slate-500">Transaksi / Pelanggan</p>
+          <h2 className="text-2xl font-bold">{summary.totalTransaksi} / {summary.totalPelanggan}</h2>
         </div>
       </div>
 
-      {!isInvestor && (
-        <div className="bg-white rounded-2xl shadow-md p-6 mb-8">
-          <h2 className="font-bold text-xl mb-4">Grafik Pendapatan Bulanan</h2>
-          <RevenueBarChart
-            labels={monthlyRevenue.labels}
-            pendapatan={monthlyRevenue.pendapatan}
-            pengeluaran={monthlyRevenue.pengeluaran}
-          />
+      {chartLabels.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-md p-6 mb-8 print:hidden">
+          <h2 className="font-bold text-xl mb-4 capitalize">Grafik Rekap {periode}</h2>
+          <RevenueBarChart labels={chartLabels} pendapatan={chartPendapatan} pengeluaran={[]} />
         </div>
       )}
 
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-        <div className="p-5 border-b">
-          <h2 className="font-bold text-xl">
-            {isInvestor ? "Laporan Outlet Investasi Anda" : "Laporan Per Outlet"}
-          </h2>
-        </div>
-        <table className="w-full">
-          <thead className="bg-slate-100">
-            <tr>
-              <th className="p-4 text-left">Outlet</th>
-              <th className="p-4 text-left">Pendapatan</th>
-              <th className="p-4 text-left">Pengeluaran</th>
-              <th className="p-4 text-left">Laba Bersih</th>
-            </tr>
-          </thead>
-          <tbody>
-            {laporanOutlet.map((item) => (
-              <tr key={item.id} className="border-t">
-                <td className="p-4 font-medium">{item.outlet}</td>
-                <td className="p-4 text-green-600 font-semibold">
-                  {formatRupiah(item.pendapatan)}
-                </td>
-                <td className="p-4 text-red-600 font-semibold">
-                  {formatRupiah(item.pengeluaran)}
-                </td>
-                <td className="p-4 text-cyan-600 font-bold">
-                  {formatRupiah(item.pendapatan - item.pengeluaran)}
-                </td>
+        <div className="p-5 border-b"><h2 className="font-bold text-xl">Rekap Per Hari</h2></div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[500px]">
+            <thead className="bg-slate-100">
+              <tr>
+                <th className="p-4 text-left">Tanggal</th>
+                <th className="p-4 text-left">Transaksi</th>
+                <th className="p-4 text-left">Pelanggan</th>
+                <th className="p-4 text-left">Pendapatan</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rekapHarian.map((d) => (
+                <tr key={d.tanggal} className="border-t">
+                  <td className="p-4">{d.tanggal}</td>
+                  <td className="p-4">{d.transaksi}</td>
+                  <td className="p-4">{d.pelanggan}</td>
+                  <td className="p-4 text-green-600 font-semibold">{formatRupiah(d.pendapatan)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="p-5 border-b">
-          <h2 className="font-bold text-xl">
-            {isInvestor ? "Bagi Hasil Investasi Anda" : "Bagi Hasil Investor"}
-          </h2>
-        </div>
-        <table className="w-full">
-          <thead className="bg-slate-100">
-            <tr>
-              <th className="p-4 text-left">Investor</th>
-              <th className="p-4 text-left">Saham</th>
-              <th className="p-4 text-left">Hak Bagi Hasil</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bagiHasil.map((inv) => (
-              <tr key={inv.id} className="border-t">
-                <td className="p-4">{inv.nama}</td>
-                <td className="p-4">{inv.persentase}%</td>
-                <td className="p-4 text-green-600 font-semibold">
-                  {formatRupiah(inv.bagiHasil)}
-                </td>
+        <div className="p-5 border-b"><h2 className="font-bold text-xl">Detail Transaksi</h2></div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1200px] text-sm">
+            <thead className="bg-slate-100">
+              <tr>
+                {REPORT_COLUMNS.map((c) => (
+                  <th key={c.label} className="p-3 text-left whitespace-nowrap">{c.label}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {summary.transactions.map((tx) => {
+                const r = normalizeTransaction(tx);
+                return (
+                  <tr key={r.id} className="border-t hover:bg-slate-50">
+                    {REPORT_COLUMNS.map((c) => (
+                      <td key={c.label} className="p-3 whitespace-nowrap">
+                        {["Subtotal", "Diskon", "Total"].includes(c.label)
+                          ? formatRupiah(c.getValue(r))
+                          : c.getValue(r)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

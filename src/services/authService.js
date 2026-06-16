@@ -1,8 +1,10 @@
 import { apiClient } from "./apiClient";
+import { getLocalData } from "@/hooks/useLocalData";
+import { kasirAccounts as initialKasirAccounts } from "@/data/laundryData";
 
 const SESSION_KEY = "laundry_msn_session";
 
-/** Akun demo sesuai role di dokumen proyek */
+/** Akun demo admin & investor */
 export const DEMO_ACCOUNTS = [
   {
     email: "qucucy@gmail.com",
@@ -10,13 +12,6 @@ export const DEMO_ACCOUNTS = [
     role: "admin",
     name: "Administrator",
     outlet: null,
-  },
-  {
-    email: "kasir@laundrymsn.com",
-    password: "kasir123",
-    role: "kasir",
-    name: "Andi Saputra",
-    outlet: "Laundry Panam",
   },
   {
     email: "investor@laundrymsn.com",
@@ -80,14 +75,39 @@ function writeSession(session) {
   }
 }
 
+function findKasirAccount(email, password) {
+  const accounts = getLocalData("kasirAccounts", initialKasirAccounts);
+  return accounts.find(
+    (k) =>
+      k.username.toLowerCase() === email &&
+      k.password === password &&
+      k.status === "Aktif"
+  );
+}
+
 /**
- * Login multi-role: admin, kasir, investor.
+ * Login multi-role: admin, kasir (per outlet), investor.
  */
 export async function login(credentials) {
   const email = credentials.email.trim().toLowerCase();
-  const account = DEMO_ACCOUNTS.find(
-    (a) => a.email.toLowerCase() === email && a.password === credentials.password
+  const password = credentials.password;
+
+  let account = DEMO_ACCOUNTS.find(
+    (a) => a.email.toLowerCase() === email && a.password === password
   );
+
+  if (!account) {
+    const kasir = findKasirAccount(email, password);
+    if (kasir) {
+      account = {
+        email: kasir.username,
+        role: "kasir",
+        name: kasir.nama,
+        outlet: kasir.outlet,
+        kasirId: kasir.id,
+      };
+    }
+  }
 
   if (!account) {
     throw new Error("Email atau password salah.");
@@ -111,6 +131,7 @@ export async function login(credentials) {
       name: account.name,
       role: account.role,
       outlet: account.outlet ?? null,
+      kasirId: account.kasirId ?? null,
       investorId: account.investorId ?? null,
       investedOutlets: account.investedOutlets ?? [],
     },
@@ -146,4 +167,11 @@ export function getInvestedOutlets() {
   const user = getCurrentUser();
   if (!user || user.role !== "investor") return [];
   return user.investedOutlets ?? [];
+}
+
+/** Daftar akun kasir untuk ditampilkan di halaman login. */
+export function getKasirDemoAccounts() {
+  return getLocalData("kasirAccounts", initialKasirAccounts).filter(
+    (k) => k.status === "Aktif"
+  );
 }

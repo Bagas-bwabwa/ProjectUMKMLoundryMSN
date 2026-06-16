@@ -6,6 +6,7 @@ import {
   APP_LOGIN_EMAIL,
   APP_LOGIN_PASSWORD,
   DEMO_ACCOUNTS,
+  getKasirDemoAccounts,
   login as loginRequest,
 } from "@/services/authService";
 
@@ -104,6 +105,8 @@ export default function LoginPage() {
   }
 
   const year = new Date().getFullYear();
+  const allKasir = getKasirDemoAccounts();
+  const kasirAccounts = allKasir.slice(0, 5);
 
   return (
     <div className="w-full rounded-[1.75rem] border border-border bg-card p-8 shadow-[0_25px_60px_-15px_rgba(8,47,73,0.55)] md:p-10">
@@ -188,11 +191,20 @@ export default function LoginPage() {
       <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 text-left">
         <p className="text-xs font-semibold text-slate-600 mb-2">Akun demo:</p>
         <ul className="text-[11px] text-slate-500 space-y-1">
-          {DEMO_ACCOUNTS.filter((acc) => acc.role !== "investor").map((acc) => (
+          {DEMO_ACCOUNTS.filter((acc) => acc.role === "admin").map((acc) => (
             <li key={acc.email}>
               <span className="font-medium capitalize">{acc.role}</span>: {acc.email} / {acc.password}
             </li>
           ))}
+        </ul>
+        <p className="text-xs font-semibold text-slate-600 mt-3 mb-1">Kasir (per outlet, password: kasir123):</p>
+        <ul className="text-[11px] text-slate-500 space-y-1 max-h-28 overflow-y-auto">
+          {kasirAccounts.map((acc) => (
+            <li key={acc.id}>{acc.outlet} — {acc.username}</li>
+          ))}
+          {allKasir.length > 5 && (
+            <li className="text-slate-400 italic">+ {allKasir.length - 5} outlet lainnya</li>
+          )}
         </ul>
         <p className="text-xs font-semibold text-slate-600 mt-3 mb-1">Investor (per outlet):</p>
         <ul className="text-[11px] text-slate-500 space-y-1">

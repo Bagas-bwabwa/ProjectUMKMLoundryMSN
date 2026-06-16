@@ -421,6 +421,7 @@ export function CrudPage({ configKey }) {
 
 export const OutletPage = () => <CrudPage configKey="outlets" />;
 export const EmployeePage = () => <CrudPage configKey="employees" />;
+export const KasirAccountPage = () => <CrudPage configKey="kasirAccounts" />;
 export const InvestorPage = () => <CrudPage configKey="investors" />;
 export const ServicePage = () => <CrudPage configKey="services" />;
 export const ItemPage = () => <CrudPage configKey="items" />;

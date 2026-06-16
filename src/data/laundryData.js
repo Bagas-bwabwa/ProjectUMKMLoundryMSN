@@ -47,20 +47,133 @@ export const investors = [
   { id: 5, nama: "Siti Aminah", outlet: "Laundry Kulim", modal: 12000000, persentase: 10, status: "Aktif" },
 ];
 
+function outletSlug(nama) {
+  return nama.toLowerCase().replace(/^laundry\s+/i, "").replace(/\s+/g, "");
+}
+
+/** Akun kasir — satu per outlet */
+export const kasirAccounts = outlets.map((o, i) => {
+  const kasirEmployee = employees.find((e) => e.outlet === o.nama && e.jabatan === "Kasir");
+  const slug = outletSlug(o.nama);
+  return {
+    id: i + 1,
+    nama: kasirEmployee?.nama ?? `Kasir ${o.nama.replace("Laundry ", "")}`,
+    username: `kasir.${slug}@laundrymsn.com`,
+    password: "kasir123",
+    hp: kasirEmployee?.hp ?? o.telepon,
+    outlet: o.nama,
+    status: "Aktif",
+  };
+});
+
+const now = new Date();
+const today = now.toISOString().slice(0, 10);
+const yesterday = new Date(now);
+yesterday.setDate(yesterday.getDate() - 1);
+const yesterdayStr = yesterday.toISOString().slice(0, 10);
+const weekAgo = new Date(now);
+weekAgo.setDate(weekAgo.getDate() - 7);
+const weekAgoStr = weekAgo.toISOString().slice(0, 10);
+
+export const transactions = [
+  {
+    id: 1, invoice: "INV-001", customer: "Ahmad", phone: "08121111111", outlet: "Laundry Panam",
+    layananType: "Kiloan", service: "Cuci Setrika", weight: 5, lineItems: [],
+    subtotal: 45000, diskon: 0, total: 45000, metodePembayaran: "Tunai",
+    status: "Diproses", paymentStatus: "Lunas", tanggal: yesterdayStr, finishDate: today,
+    cancelled: false, kasir: "Andi Saputra", kasirId: 1,
+    statusHistory: [
+      { status: "Menunggu", by: "Andi Saputra", at: yesterdayStr, note: "Transaksi dibuat" },
+      { status: "Diproses", by: "Andi Saputra", at: yesterdayStr, note: "Cucian mulai diproses" },
+    ],
+  },
+  {
+    id: 2, invoice: "INV-002", customer: "Budi", phone: "08122222222", outlet: "Laundry Arengka",
+    layananType: "Kiloan", service: "Express", weight: 3, lineItems: [],
+    subtotal: 45000, diskon: 5000, total: 40000, metodePembayaran: "QRIS",
+    status: "Selesai", paymentStatus: "Lunas", tanggal: yesterdayStr, finishDate: yesterdayStr,
+    cancelled: false, kasir: "Budi Santoso", kasirId: 2,
+    statusHistory: [
+      { status: "Menunggu", by: "Budi Santoso", at: yesterdayStr, note: "Transaksi dibuat" },
+      { status: "Diproses", by: "Budi Santoso", at: yesterdayStr, note: "Diproses express" },
+      { status: "Selesai", by: "Budi Santoso", at: yesterdayStr, note: "Selesai & diambil" },
+    ],
+  },
+  {
+    id: 3, invoice: "INV-003", customer: "Siti", phone: "08123333333", outlet: "Laundry Marpoyan",
+    layananType: "Satuan", service: "", weight: 0,
+    lineItems: [
+      { itemId: 1, nama: "Bed Cover", qty: 2, harga: 35000, subtotal: 70000 },
+      { itemId: 2, nama: "Jas", qty: 1, harga: 25000, subtotal: 25000 },
+    ],
+    subtotal: 95000, diskon: 0, total: 95000, metodePembayaran: "Transfer",
+    status: "Menunggu", paymentStatus: "DP", tanggal: today, finishDate: null,
+    cancelled: false, kasir: "Citra Dewi", kasirId: 3,
+    statusHistory: [{ status: "Menunggu", by: "Citra Dewi", at: today, note: "Transaksi dibuat" }],
+  },
+  {
+    id: 4, invoice: "INV-004", customer: "Rina", phone: "08124444444", outlet: "Laundry Panam",
+    layananType: "Kiloan", service: "Cuci Komplit", weight: 4, lineItems: [],
+    subtotal: 48000, diskon: 3000, total: 45000, metodePembayaran: "Tunai",
+    status: "Selesai", paymentStatus: "Lunas", tanggal: today, finishDate: today,
+    cancelled: false, kasir: "Andi Saputra", kasirId: 1,
+    statusHistory: [
+      { status: "Menunggu", by: "Andi Saputra", at: today, note: "Transaksi dibuat" },
+      { status: "Diproses", by: "Andi Saputra", at: today, note: "Sedang dicuci" },
+      { status: "Selesai", by: "Andi Saputra", at: today, note: "Selesai" },
+    ],
+  },
+  {
+    id: 5, invoice: "INV-005", customer: "Joko", phone: "08125555555", outlet: "Laundry Sail",
+    layananType: "Kiloan", service: "Setrika Saja", weight: 2, lineItems: [],
+    subtotal: 10000, diskon: 0, total: 10000, metodePembayaran: "Tunai",
+    status: "Dibatalkan", paymentStatus: "Refund", tanggal: weekAgoStr, finishDate: null,
+    cancelled: true, kasir: "Dewi Lestari", kasirId: 4,
+    statusHistory: [{ status: "Menunggu", by: "Dewi Lestari", at: weekAgoStr, note: "Transaksi dibuat" }],
+  },
+  {
+    id: 6, invoice: "INV-006", customer: "Dewi", phone: "08126666666", outlet: "Laundry Panam",
+    layananType: "Satuan", service: "", weight: 0,
+    lineItems: [{ itemId: 5, nama: "Sepatu", qty: 2, harga: 30000, subtotal: 60000 }],
+    subtotal: 60000, diskon: 0, total: 60000, metodePembayaran: "Debit",
+    status: "Selesai", paymentStatus: "Lunas", tanggal: weekAgoStr, finishDate: weekAgoStr,
+    cancelled: false, kasir: "Andi Saputra", kasirId: 1,
+    statusHistory: [
+      { status: "Menunggu", by: "Andi Saputra", at: weekAgoStr, note: "Transaksi dibuat" },
+      { status: "Selesai", by: "Andi Saputra", at: weekAgoStr, note: "Selesai" },
+    ],
+  },
+  {
+    id: 7, invoice: "INV-007", customer: "Eko", phone: "08127777777", outlet: "Laundry Arengka",
+    layananType: "Kiloan", service: "Cuci Kering", weight: 6, lineItems: [],
+    subtotal: 42000, diskon: 0, total: 42000, metodePembayaran: "Tunai",
+    status: "Selesai", paymentStatus: "Lunas", tanggal: weekAgoStr, finishDate: weekAgoStr,
+    cancelled: false, kasir: "Budi Santoso", kasirId: 2,
+    statusHistory: [{ status: "Selesai", by: "Budi Santoso", at: weekAgoStr, note: "Selesai" }],
+  },
+  {
+    id: 8, invoice: "INV-008", customer: "Fitri", phone: "08128888888", outlet: "Laundry Kulim",
+    layananType: "Satuan", service: "", weight: 0,
+    lineItems: [
+      { itemId: 3, nama: "Selimut", qty: 3, harga: 20000, subtotal: 60000 },
+      { itemId: 4, nama: "Boneka Kecil", qty: 2, harga: 15000, subtotal: 30000 },
+    ],
+    subtotal: 90000, diskon: 10000, total: 80000, metodePembayaran: "Transfer",
+    status: "Diproses", paymentStatus: "Lunas", tanggal: today, finishDate: null,
+    cancelled: false, kasir: "Eko Prasetyo", kasirId: 5,
+    statusHistory: [
+      { status: "Menunggu", by: "Eko Prasetyo", at: today, note: "Transaksi dibuat" },
+      { status: "Diproses", by: "Eko Prasetyo", at: today, note: "Sedang diproses" },
+    ],
+  },
+];
+
 export const stocks = [
   { id: 1, nama: "Deterjen Rinso", kategori: "Bahan Cuci", outlet: "Laundry Panam", stok: 25, satuan: "Kg" },
   { id: 2, nama: "Pewangi Downy", kategori: "Pewangi", outlet: "Laundry Panam", stok: 10, satuan: "Liter" },
   { id: 3, nama: "Plastik Laundry", kategori: "Kemasan", outlet: "Laundry Arengka", stok: 3, satuan: "Pack" },
   { id: 4, nama: "Hanger", kategori: "Peralatan", outlet: "Laundry Marpoyan", stok: 50, satuan: "Pcs" },
   { id: 5, nama: "Deterjen Rinso", kategori: "Bahan Cuci", outlet: "Laundry Arengka", stok: 18, satuan: "Kg" },
-];
-
-export const transactions = [
-  { id: 1, invoice: "INV-001", customer: "Ahmad", phone: "08121111111", outlet: "Laundry Panam", service: "Cuci Setrika", weight: 5, total: 45000, status: "Diproses", paymentStatus: "Lunas", tanggal: "2026-06-10", cancelled: false },
-  { id: 2, invoice: "INV-002", customer: "Budi", phone: "08122222222", outlet: "Laundry Arengka", service: "Express", weight: 3, total: 45000, status: "Selesai", paymentStatus: "Lunas", tanggal: "2026-06-10", cancelled: false },
-  { id: 3, invoice: "INV-003", customer: "Siti", phone: "08123333333", outlet: "Laundry Marpoyan", service: "Cuci Kering", weight: 7, total: 49000, status: "Menunggu", paymentStatus: "DP", tanggal: "2026-06-11", cancelled: false },
-  { id: 4, invoice: "INV-004", customer: "Rina", phone: "08124444444", outlet: "Laundry Panam", service: "Cuci Komplit", weight: 4, total: 48000, status: "Selesai", paymentStatus: "Lunas", tanggal: "2026-06-11", cancelled: false },
-  { id: 5, invoice: "INV-005", customer: "Joko", phone: "08125555555", outlet: "Laundry Sail", service: "Setrika Saja", weight: 2, total: 10000, status: "Dibatalkan", paymentStatus: "Refund", tanggal: "2026-06-09", cancelled: true },
 ];
 
 export const expenses = [

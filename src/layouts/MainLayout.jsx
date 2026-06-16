@@ -35,6 +35,7 @@ const ADMIN_NAV = [
     items: [
       { name: "Outlet", path: ROUTES.OUTLETS, icon: Building2 },
       { name: "Karyawan", path: ROUTES.EMPLOYEES, icon: Users },
+      { name: "Akun Kasir", path: ROUTES.KASIR_ACCOUNTS, icon: Users },
       { name: "Investor", path: ROUTES.INVESTORS, icon: Users },
       { name: "Layanan Laundry", path: ROUTES.SERVICES, icon: Sparkles },
       { name: "Item Satuan", path: ROUTES.ITEMS, icon: BookOpen },
@@ -78,6 +79,10 @@ const KASIR_NAV = [
       { name: "Laporan Harian", path: ROUTES.DAILY_REPORTS, icon: FileText },
     ],
   },
+  {
+    section: "LAPORAN",
+    items: [{ name: "Laporan Keuangan", path: ROUTES.REPORTS, icon: BarChart3 }],
+  },
 ];
 
 const INVESTOR_NAV = [
@@ -87,7 +92,7 @@ const INVESTOR_NAV = [
   },
   {
     section: "LAPORAN",
-    items: [{ name: "Laporan Keuangan", path: ROUTES.REPORTS, icon: BarChart3 }],
+    items: [{ name: "Laporan Investor", path: ROUTES.INVESTOR_REPORTS, icon: BarChart3 }],
   },
 ];
 

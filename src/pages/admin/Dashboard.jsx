@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Building2,
   Users,
@@ -11,7 +12,6 @@ import { Link } from "react-router-dom";
 import { RevenueBarChart, RevenueLineChart } from "@/components/charts/RevenueChart";
 import {
   getDashboardStats,
-  getOutletReportByOutlets,
   getInvestorById,
   calcBagiHasil,
   investors,
@@ -23,98 +23,119 @@ import {
 } from "@/data/laundryData";
 import { getCurrentUser, getInvestedOutlets } from "@/services/authService";
 import { useLocalData } from "@/hooks/useLocalData";
+import {
+  buildFinancialSummary,
+  calcGrowthPercent,
+  getDateRange,
+  getPreviousPeriodRange,
+  groupByDate,
+  groupByOutlet,
+} from "@/utils/reportUtils";
 import { ROUTES } from "@/router/paths";
 
 function InvestorDashboard() {
   const user = getCurrentUser();
   const investedOutlets = getInvestedOutlets();
   const investorRecord = getInvestorById(user?.investorId);
-  const laporan = getOutletReportByOutlets(investedOutlets);
-  const totalPendapatan = laporan.reduce((a, b) => a + b.pendapatan, 0);
-  const totalPengeluaran = laporan.reduce((a, b) => a + b.pengeluaran, 0);
-  const labaBersih = totalPendapatan - totalPengeluaran;
+  const { data: txData } = useLocalData("transactions", initialTx);
+  const [filterOutlet, setFilterOutlet] = useState("");
+
+  const outletFilter = filterOutlet ? [filterOutlet] : investedOutlets;
+  const range = getDateRange("bulanan");
+  const summary = buildFinancialSummary(txData, [], { ...range, outlets: outletFilter });
+  const prevSummary = buildFinancialSummary(txData, [], {
+    ...getPreviousPeriodRange("bulanan"),
+    outlets: outletFilter,
+  });
+
   const persentase = investorRecord?.persentase ?? 0;
-  const bagiHasil = calcBagiHasil(labaBersih, persentase);
-  const outletLabel = investedOutlets.join(", ");
+  const bagiHasil = calcBagiHasil(summary.labaBersih, persentase);
+  const growth = calcGrowthPercent(summary.pendapatan, prevSummary.pendapatan);
+  const perOutlet = groupByOutlet(summary.transactions);
+  const dailyData = groupByDate(summary.transactions);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-800">Dashboard Investor</h1>
-        <p className="text-slate-500">
-          Ringkasan keuntungan investasi Anda — {outletLabel || "belum ada outlet"}
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">Dashboard Investor</h1>
+          <p className="text-slate-500">
+            Ringkasan investasi — {investedOutlets.join(", ")}
+          </p>
+        </div>
+        <select value={filterOutlet} onChange={(e) => setFilterOutlet(e.target.value)}
+          className="border rounded-xl px-4 py-2 self-start">
+          <option value="">Semua Outlet Investasi</option>
+          {investedOutlets.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         <div className="bg-white rounded-2xl shadow-md p-5">
-          <p className="text-slate-500">Laba Bersih Outlet Anda</p>
-          <h2 className="text-3xl font-bold text-cyan-600 mt-2">
-            {formatRupiah(labaBersih)}
-          </h2>
+          <p className="text-slate-500">Total Pendapatan</p>
+          <h2 className="text-2xl font-bold text-green-600 mt-2">{formatRupiah(summary.pendapatan)}</h2>
+          <p className="text-xs mt-1 text-slate-500">{growth >= 0 ? "+" : ""}{growth}% vs bulan lalu</p>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-5">
-          <p className="text-slate-500">Porsi Saham Anda</p>
-          <h2 className="text-3xl font-bold mt-2">{persentase}%</h2>
+          <p className="text-slate-500">Total Transaksi</p>
+          <h2 className="text-2xl font-bold mt-2">{summary.totalTransaksi}</h2>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-5">
-          <p className="text-slate-500">Bagi Hasil Bulan Ini</p>
-          <h2 className="text-3xl font-bold text-green-600 mt-2">
-            {formatRupiah(bagiHasil)}
-          </h2>
+          <p className="text-slate-500">Pelanggan Aktif</p>
+          <h2 className="text-2xl font-bold mt-2">{summary.totalPelanggan}</h2>
+        </div>
+        <div className="bg-white rounded-2xl shadow-md p-5">
+          <p className="text-slate-500">Bagi Hasil ({persentase}%)</p>
+          <h2 className="text-2xl font-bold text-cyan-600 mt-2">{formatRupiah(bagiHasil)}</h2>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h3 className="font-semibold text-lg mb-4">Laporan Outlet Investasi Anda</h3>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-3">Outlet</th>
-              <th className="text-left py-3">Pendapatan</th>
-              <th className="text-left py-3">Pengeluaran</th>
-              <th className="text-left py-3">Laba Bersih</th>
-              <th className="text-left py-3">Bagi Hasil Anda</th>
-            </tr>
-          </thead>
-          <tbody>
-            {laporan.map((item) => {
-              const labaOutlet = item.pendapatan - item.pengeluaran;
-              return (
-                <tr key={item.id} className="border-b">
-                  <td className="py-3 font-medium">{item.outlet}</td>
-                  <td className="text-green-600">{formatRupiah(item.pendapatan)}</td>
-                  <td className="text-red-600">{formatRupiah(item.pengeluaran)}</td>
-                  <td className="text-cyan-600 font-semibold">
-                    {formatRupiah(labaOutlet)}
-                  </td>
-                  <td className="text-green-600 font-semibold">
-                    {formatRupiah(calcBagiHasil(labaOutlet, persentase))}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="grid xl:grid-cols-2 gap-5">
+        <div className="bg-white rounded-2xl shadow-md p-6">
+          <h3 className="font-semibold text-lg mb-4">Grafik Pertumbuhan Pendapatan</h3>
+          <RevenueLineChart
+            labels={dailyData.map((d) => d.tanggal.slice(5))}
+            pendapatan={dailyData.map((d) => d.pendapatan)}
+          />
+        </div>
+        <div className="bg-white rounded-2xl shadow-md p-6">
+          <h3 className="font-semibold text-lg mb-4">Pendapatan Per Outlet</h3>
+          <div className="space-y-3">
+            {perOutlet.map((item) => (
+              <div key={item.outlet} className="flex justify-between">
+                <span>{item.outlet}</span>
+                <span className="font-semibold text-green-600">{formatRupiah(item.pendapatan)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {investorRecord && (
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <h3 className="font-semibold text-lg mb-4">Detail Investasi Anda</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <h3 className="font-semibold text-lg mb-4">Detail Investasi</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm">
             <div>
-              <p className="text-slate-500">Modal Investasi</p>
+              <p className="text-slate-500">Modal</p>
               <p className="font-semibold text-lg">{formatRupiah(investorRecord.modal)}</p>
             </div>
             <div>
-              <p className="text-slate-500">Kepemilikan Saham</p>
+              <p className="text-slate-500">Kepemilikan</p>
               <p className="font-semibold text-lg">{investorRecord.persentase}%</p>
+            </div>
+            <div>
+              <p className="text-slate-500">Laba Bersih</p>
+              <p className="font-semibold text-lg text-cyan-600">{formatRupiah(summary.labaBersih)}</p>
             </div>
             <div>
               <p className="text-slate-500">Status</p>
               <p className="font-semibold text-lg">{investorRecord.status}</p>
             </div>
           </div>
+          <Link to={ROUTES.INVESTOR_REPORTS}
+            className="inline-block mt-4 text-cyan-600 hover:underline text-sm font-medium">
+            Lihat laporan lengkap →
+          </Link>
         </div>
       )}
     </div>

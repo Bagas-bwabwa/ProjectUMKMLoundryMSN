@@ -37,24 +37,25 @@ const chartOptions = {
   },
 };
 
-export function RevenueBarChart({ labels, pendapatan, pengeluaran }) {
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: "Pendapatan",
-        data: pendapatan,
-        backgroundColor: "rgba(34, 197, 94, 0.7)",
-        borderRadius: 8,
-      },
-      {
-        label: "Pengeluaran",
-        data: pengeluaran,
-        backgroundColor: "rgba(239, 68, 68, 0.7)",
-        borderRadius: 8,
-      },
-    ],
-  };
+export function RevenueBarChart({ labels, pendapatan, pengeluaran = [] }) {
+  const datasets = [
+    {
+      label: "Pendapatan",
+      data: pendapatan,
+      backgroundColor: "rgba(34, 197, 94, 0.7)",
+      borderRadius: 8,
+    },
+  ];
+  if (pengeluaran.length > 0) {
+    datasets.push({
+      label: "Pengeluaran",
+      data: pengeluaran,
+      backgroundColor: "rgba(239, 68, 68, 0.7)",
+      borderRadius: 8,
+    });
+  }
+
+  const data = { labels, datasets };
 
   return (
     <div className="h-72">

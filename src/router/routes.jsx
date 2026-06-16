@@ -13,9 +13,11 @@ import TransactionPage from "@/pages/admin/Transaction";
 import TransactionDetailPage from "@/pages/admin/TransactionDetailPage";
 import OutletDetail from "@/pages/admin/OutletDetail";
 import ReportPage from "@/pages/admin/Report";
+import InvestorReportPage from "@/pages/admin/InvestorReport";
 import {
   OutletPage,
   EmployeePage,
+  KasirAccountPage,
   InvestorPage,
   ServicePage,
   ItemPage,
@@ -68,12 +70,14 @@ const routeTree = [
               { index: true, element: <Navigate to="/dashboard" replace /> },
               { path: "dashboard", element: <DashboardPage /> },
               { path: "reports", element: <ReportPage /> },
+              { path: "investor-reports", element: <InvestorReportPage /> },
               {
                 element: <InvestorRouteGuard />,
                 children: [
                   { path: "outlets", element: <OutletPage /> },
                   { path: "outlets/:id", element: <OutletDetail /> },
                   { path: "employees", element: <EmployeePage /> },
+                  { path: "kasir-accounts", element: <KasirAccountPage /> },
                   { path: "investors", element: <InvestorPage /> },
                   { path: "services", element: <ServicePage /> },
                   { path: "items", element: <ItemPage /> },
