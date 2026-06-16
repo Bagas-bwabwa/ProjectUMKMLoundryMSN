@@ -1,66 +1,34 @@
 import { Suspense, lazy } from "react";
-import {
-  Navigate,
-  Outlet,
-  createBrowserRouter,
-} from "react-router-dom";
+import { Navigate, Outlet, createBrowserRouter } from "react-router-dom";
 
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { MainLayout } from "@/layouts/MainLayout";
-
 import { GuestRoute } from "@/components/routing/GuestRoute";
 import { ProtectedRoute } from "@/components/routing/ProtectedRoute";
+import { InvestorRouteGuard } from "@/components/routing/InvestorRouteGuard";
 import { PageLoading } from "@/components/layout/PageLoading";
 
-/* =========================
-   ADMIN PAGES
-========================= */
-
 import DashboardPage from "@/pages/admin/Dashboard";
-import OutletPage from "@/pages/admin/Outlet";
-import EmployeePage from "@/pages/admin/Employee";
-import InvestorPage from "@/pages/admin/Investor";
-import ServicePage from "@/pages/admin/Service";
-import ItemPage from "@/pages/admin/Item";
-import StockPage from "@/pages/admin/Stock";
 import TransactionPage from "@/pages/admin/Transaction";
-import ExpensePage from "@/pages/admin/Expense";
-import ReportPage from "@/pages/admin/Report";
-import CreateTransactionPage from "@/pages/admin/CreateTransaction";
 import TransactionDetailPage from "@/pages/admin/TransactionDetailPage";
 import OutletDetail from "@/pages/admin/OutletDetail";
-import DailyReportPage from "@/pages/admin/DailyReport";
-import SalaryPage from "@/pages/admin/Salary";
-import MaterialUsagePage from "@/pages/admin/MaterialUsage";
-
-/* =========================
-   PLACEHOLDER PAGES
-========================= */
+import ReportPage from "@/pages/admin/Report";
+import {
+  OutletPage,
+  EmployeePage,
+  InvestorPage,
+  ServicePage,
+  ItemPage,
+  StockPage,
+  ExpensePage,
+  MaterialUsagePage,
+  SalaryPage,
+  DailyReportPage,
+} from "@/pages/admin/CrudPages";
 
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
-const SettingsLayoutPage = lazy(
-  () => import("@/pages/SettingsLayoutPage")
-);
-
-const SettingsProfilePage = lazy(
-  () => import("@/pages/SettingsProfilePage")
-);
-
-const SettingsNotificationsPage = lazy(
-  () => import("@/pages/SettingsNotificationsPage")
-);
-
-const SettingsSecurityPage = lazy(
-  () => import("@/pages/SettingsSecurityPage")
-);
-
-const NotFoundPage = lazy(
-  () => import("@/pages/NotFoundPage")
-);
-
-/* =========================
-   ROOT SUSPENSE
-========================= */
+const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
+const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 function RootSuspenseLayout() {
   return (
@@ -70,194 +38,57 @@ function RootSuspenseLayout() {
   );
 }
 
-/* =========================
-   BASENAME
-========================= */
-
 function normalizeBasename(base) {
   if (!base || base === "/") return "/";
-
-  return base.endsWith("/")
-    ? base.slice(0, -1)
-    : base;
+  return base.endsWith("/") ? base.slice(0, -1) : base;
 }
 
-const basename = normalizeBasename(
-  import.meta.env.BASE_URL
-);
-
-/* =========================
-   ROUTES
-========================= */
+const basename = normalizeBasename(import.meta.env.BASE_URL);
 
 const routeTree = [
   {
     element: <RootSuspenseLayout />,
-
     children: [
       {
         path: "login",
-
         element: <GuestRoute />,
-
         children: [
           {
             element: <AuthLayout />,
-
-            children: [
-              {
-                index: true,
-                element: <LoginPage />,
-              },
-            ],
+            children: [{ index: true, element: <LoginPage /> }],
           },
         ],
       },
-
       {
         element: <ProtectedRoute />,
-
         children: [
           {
             element: <MainLayout />,
-
             children: [
+              { index: true, element: <Navigate to="/dashboard" replace /> },
+              { path: "dashboard", element: <DashboardPage /> },
+              { path: "reports", element: <ReportPage /> },
               {
-                index: true,
-
-                element: (
-                  <Navigate
-                    to="/dashboard"
-                    replace
-                  />
-                ),
-              },
-
-              {
-                path: "dashboard",
-                element: <DashboardPage />,
-              },
-
-              {
-                path: "outlets",
-                element: <OutletPage />,
-              },
-              {
-                path: "outlets/:id",
-                element: <OutletDetail />,
-              },
-
-              {
-                path: "employees",
-                element: <EmployeePage />,
-              },
-
-              {
-                path: "investors",
-                element: <InvestorPage />,
-              },
-              {
-                path: "services",
-                element: <ServicePage />,
-              },
-
-
-              {
-                path: "items",
-                element: <ItemPage />,
-              },
-
-              {
-                path: "stocks",
-                element: <StockPage />,
-              },
-
-              {
-                path: "transactions",
-                element: <TransactionPage />,
-              },
-              {
-                path: "transactions/:id",
-                element: <TransactionDetailPage />,
-              },
-              {
-                path: "transactions/create",
-                element: <CreateTransactionPage />,
-              },
-
-              {
-                path: "expenses",
-                element: <ExpensePage />,
-              },
-
-              {
-                path: "reports",
-                element: <ReportPage />,
-              },
-
-              {
-                path: "daily-reports",
-                element: <DailyReportPage />,
-              },
-
-              {
-                path: "salary",
-                element: <SalaryPage />,
-              },
-
-              {
-                path: "materials",
-                element: <MaterialUsagePage />,
-              },
-
-              {
-                path: "settings",
-
-                element: (
-                  <SettingsLayoutPage />
-                ),
-
+                element: <InvestorRouteGuard />,
                 children: [
-                  {
-                    index: true,
-
-                    element: (
-                      <Navigate
-                        to="profile"
-                        replace
-                      />
-                    ),
-                  },
-
-                  {
-                    path: "profile",
-                    element: (
-                      <SettingsProfilePage />
-                    ),
-                  },
-
-                  {
-                    path: "notifications",
-
-                    element: (
-                      <SettingsNotificationsPage />
-                    ),
-                  },
-
-                  {
-                    path: "security",
-
-                    element: (
-                      <SettingsSecurityPage />
-                    ),
-                  },
+                  { path: "outlets", element: <OutletPage /> },
+                  { path: "outlets/:id", element: <OutletDetail /> },
+                  { path: "employees", element: <EmployeePage /> },
+                  { path: "investors", element: <InvestorPage /> },
+                  { path: "services", element: <ServicePage /> },
+                  { path: "items", element: <ItemPage /> },
+                  { path: "stocks", element: <StockPage /> },
+                  { path: "transactions", element: <TransactionPage /> },
+                  { path: "transactions/create", element: <Navigate to="/transactions" replace /> },
+                  { path: "transactions/:id", element: <TransactionDetailPage /> },
+                  { path: "expenses", element: <ExpensePage /> },
+                  { path: "daily-reports", element: <DailyReportPage /> },
+                  { path: "salary", element: <SalaryPage /> },
+                  { path: "materials", element: <MaterialUsagePage /> },
+                  { path: "settings", element: <SettingsPage /> },
                 ],
               },
-
-              {
-                path: "*",
-                element: <NotFoundPage />,
-              },
+              { path: "*", element: <NotFoundPage /> },
             ],
           },
         ],
@@ -266,7 +97,4 @@ const routeTree = [
   },
 ];
 
-export const router =
-  createBrowserRouter(routeTree, {
-    basename,
-  });
+export const router = createBrowserRouter(routeTree, { basename });

@@ -23,7 +23,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ROUTES } from "@/router/paths";
 import { cn } from "@/lib/utils";
-import { getCurrentUser } from "@/services/authService";
+import { getCurrentUser, getInvestedOutlets } from "@/services/authService";
 
 const ADMIN_NAV = [
   {
@@ -123,12 +123,15 @@ export function MainLayout() {
     return location.pathname.startsWith(path);
   }
 
+  const investedOutlets = getInvestedOutlets();
   const roleLabel =
     user?.role === "admin"
       ? "Administrator"
       : user?.role === "kasir"
         ? "Kasir Outlet"
-        : "Investor";
+        : investedOutlets.length
+          ? `Investor — ${investedOutlets.join(", ")}`
+          : "Investor";
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-sky-100 via-cyan-50 to-blue-100">

@@ -1,259 +1,106 @@
-import {
-  ArrowLeft,
-  Users,
-  Wallet,
-  Receipt,
-  Building2,
-} from "lucide-react";
-
 import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, Building2, Users, Receipt, Wallet } from "lucide-react";
+import { useLocalData } from "@/hooks/useLocalData";
+import { CRUD_CONFIGS } from "@/data/pageConfigs";
+import { transactions as initialTx, formatRupiah } from "@/data/laundryData";
+import { ROUTES } from "@/router/paths";
 
 export default function OutletDetail() {
-
   const { id } = useParams();
+  const { data: outlets } = useLocalData(
+    CRUD_CONFIGS.outlets.storageKey,
+    CRUD_CONFIGS.outlets.initialData
+  );
+  const { data: employees } = useLocalData(
+    CRUD_CONFIGS.employees.storageKey,
+    CRUD_CONFIGS.employees.initialData
+  );
+  const { data: investors } = useLocalData(
+    CRUD_CONFIGS.investors.storageKey,
+    CRUD_CONFIGS.investors.initialData
+  );
+  const { data: transactions } = useLocalData("transactions", initialTx);
 
-  const outlet = {
-    id,
-    nama: "Laundry Panam",
-    alamat: "Jl. HR Soebrantas No.88",
-    telepon: "08123456789",
-    status: "Aktif",
+  const outlet = outlets.find((o) => String(o.id) === String(id));
 
-    totalKaryawan: 5,
-    totalInvestor: 2,
-    totalTransaksi: 325,
+  if (!outlet) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-slate-500 mb-4">Outlet tidak ditemukan</p>
+        <Link to={ROUTES.OUTLETS} className="text-cyan-600 hover:underline">
+          Kembali ke daftar outlet
+        </Link>
+      </div>
+    );
+  }
 
-    pendapatan: 12500000,
-  };
+  const outletTx = transactions.filter(
+    (t) => t.outlet === outlet.nama && !t.cancelled
+  );
+  const pendapatan = outletTx.reduce((s, t) => s + t.total, 0);
+  const totalKaryawan = employees.filter((e) => e.outlet === outlet.nama).length;
+  const totalInvestor = investors.filter((i) => i.outlet === outlet.nama).length;
+
+  const stats = [
+    { label: "Total Karyawan", value: totalKaryawan, icon: Users },
+    { label: "Total Investor", value: totalInvestor, icon: Wallet },
+    { label: "Total Transaksi", value: outletTx.length, icon: Receipt },
+    { label: "Pendapatan", value: formatRupiah(pendapatan), icon: Building2 },
+  ];
 
   return (
-
     <div className="space-y-6">
-
-      {/* Header */}
-
       <div className="flex justify-between items-center">
-
         <div>
-
-          <h1 className="text-3xl font-bold text-slate-800">
-            Detail Outlet
-          </h1>
-
-          <p className="text-slate-500">
-            Informasi lengkap outlet
-          </p>
-
+          <h1 className="text-3xl font-bold text-slate-800">Detail Outlet</h1>
+          <p className="text-slate-500">Informasi lengkap outlet</p>
         </div>
-
         <Link
-          to="/outlets"
-          className="
-          flex items-center gap-2
-          bg-slate-200
-          px-4 py-3
-          rounded-xl
-          hover:bg-slate-300
-          "
+          to={ROUTES.OUTLETS}
+          className="flex items-center gap-2 px-4 py-3 bg-slate-200 rounded-xl hover:bg-slate-300"
         >
-          <ArrowLeft size={18}/>
+          <ArrowLeft size={18} />
           Kembali
         </Link>
-
       </div>
 
-      {/* Profil Outlet */}
-
       <div className="bg-white rounded-2xl shadow-lg p-6">
-
-        <div className="flex items-center gap-4 mb-4">
-
-          <div
-            className="
-            w-16 h-16
-            rounded-2xl
-            bg-cyan-100
-            flex items-center justify-center
-            "
+        <h2 className="text-2xl font-bold mb-2">{outlet.nama}</h2>
+        <p className="text-slate-500">{outlet.alamat}</p>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm">
+          <span>Kota: {outlet.kota}</span>
+          <span>Telepon: {outlet.telepon}</span>
+          <span
+            className={`px-3 py-1 rounded-full ${
+              outlet.status === "Aktif"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
           >
-            <Building2
-              size={32}
-              className="text-cyan-600"
-            />
-          </div>
-
-          <div>
-
-            <h2 className="text-2xl font-bold">
-              {outlet.nama}
-            </h2>
-
-            <p className="text-slate-500">
-              {outlet.alamat}
-            </p>
-
-          </div>
-
+            {outlet.status}
+          </span>
         </div>
+      </div>
 
-        <div className="grid md:grid-cols-3 gap-4 mt-5">
-
-          <div>
-            <p className="text-slate-500">
-              Telepon
-            </p>
-            <p className="font-semibold">
-              {outlet.telepon}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-slate-500">
-              Status
-            </p>
-
-            <span
-              className="
-              bg-green-100
-              text-green-700
-              px-3 py-1
-              rounded-full
-              text-sm
-              "
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        {stats.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div
+              key={item.label}
+              className="bg-white rounded-2xl shadow-md p-5 flex items-center gap-4"
             >
-              {outlet.status}
-            </span>
-
-          </div>
-
-        </div>
-
+              <div className="w-12 h-12 rounded-xl bg-cyan-100 flex items-center justify-center">
+                <Icon className="text-cyan-600" />
+              </div>
+              <div>
+                <p className="text-slate-500 text-sm">{item.label}</p>
+                <h3 className="text-xl font-bold">{item.value}</h3>
+              </div>
+            </div>
+          );
+        })}
       </div>
-
-      {/* Statistik */}
-
-      <div className="grid md:grid-cols-4 gap-5">
-
-        <div className="bg-white p-5 rounded-2xl shadow-md">
-
-          <Users
-            className="text-blue-500 mb-2"
-          />
-
-          <p className="text-slate-500">
-            Karyawan
-          </p>
-
-          <h2 className="text-3xl font-bold">
-            {outlet.totalKaryawan}
-          </h2>
-
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl shadow-md">
-
-          <Wallet
-            className="text-green-500 mb-2"
-          />
-
-          <p className="text-slate-500">
-            Investor
-          </p>
-
-          <h2 className="text-3xl font-bold">
-            {outlet.totalInvestor}
-          </h2>
-
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl shadow-md">
-
-          <Receipt
-            className="text-orange-500 mb-2"
-          />
-
-          <p className="text-slate-500">
-            Transaksi
-          </p>
-
-          <h2 className="text-3xl font-bold">
-            {outlet.totalTransaksi}
-          </h2>
-
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl shadow-md">
-
-          <Wallet
-            className="text-emerald-500 mb-2"
-          />
-
-          <p className="text-slate-500">
-            Pendapatan
-          </p>
-
-          <h2 className="text-xl font-bold">
-            Rp {outlet.pendapatan.toLocaleString("id-ID")}
-          </h2>
-
-        </div>
-
-      </div>
-
-      {/* Karyawan */}
-
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-
-        <h2 className="text-xl font-bold mb-4">
-          Daftar Karyawan
-        </h2>
-
-        <table className="w-full">
-
-          <thead className="bg-slate-100">
-
-            <tr>
-              <th className="p-3 text-left">
-                Nama
-              </th>
-
-              <th className="p-3 text-left">
-                Jabatan
-              </th>
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            <tr className="border-t">
-              <td className="p-3">
-                Budi
-              </td>
-
-              <td className="p-3">
-                Manager
-              </td>
-            </tr>
-
-            <tr className="border-t">
-              <td className="p-3">
-                Andi
-              </td>
-
-              <td className="p-3">
-                Staff Laundry
-              </td>
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
-
     </div>
-
   );
-
 }

@@ -23,7 +23,40 @@ export const DEMO_ACCOUNTS = [
     password: "investor123",
     role: "investor",
     name: "Budi Santoso",
-    outlet: null,
+    investorId: 1,
+    investedOutlets: ["Laundry Panam"],
+  },
+  {
+    email: "investor.arengka@laundrymsn.com",
+    password: "investor123",
+    role: "investor",
+    name: "Andi Wijaya",
+    investorId: 2,
+    investedOutlets: ["Laundry Arengka"],
+  },
+  {
+    email: "investor.marpoyan@laundrymsn.com",
+    password: "investor123",
+    role: "investor",
+    name: "Rina Putri",
+    investorId: 3,
+    investedOutlets: ["Laundry Marpoyan"],
+  },
+  {
+    email: "investor.sail@laundrymsn.com",
+    password: "investor123",
+    role: "investor",
+    name: "Hendra Gunawan",
+    investorId: 4,
+    investedOutlets: ["Laundry Sail"],
+  },
+  {
+    email: "investor.kulim@laundrymsn.com",
+    password: "investor123",
+    role: "investor",
+    name: "Siti Aminah",
+    investorId: 5,
+    investedOutlets: ["Laundry Kulim"],
   },
 ];
 
@@ -77,7 +110,9 @@ export async function login(credentials) {
       email: account.email,
       name: account.name,
       role: account.role,
-      outlet: account.outlet,
+      outlet: account.outlet ?? null,
+      investorId: account.investorId ?? null,
+      investedOutlets: account.investedOutlets ?? [],
     },
   };
 
@@ -104,4 +139,11 @@ export function isAuthenticated() {
 export function hasRole(...roles) {
   const user = getCurrentUser();
   return user ? roles.includes(user.role) : false;
+}
+
+/** Outlet yang boleh dilihat investor yang sedang login. */
+export function getInvestedOutlets() {
+  const user = getCurrentUser();
+  if (!user || user.role !== "investor") return [];
+  return user.investedOutlets ?? [];
 }

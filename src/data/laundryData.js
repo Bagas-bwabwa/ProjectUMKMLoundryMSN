@@ -136,3 +136,17 @@ export function getInvestorShare(labaBersih) {
     bagiHasil: Math.round(labaBersih * (inv.persentase / 100)),
   }));
 }
+
+export function getOutletReportByOutlets(outletNames) {
+  if (!outletNames?.length) return [];
+  const allowed = new Set(outletNames);
+  return getOutletReport().filter((item) => allowed.has(item.outlet));
+}
+
+export function getInvestorById(investorId) {
+  return investors.find((inv) => inv.id === investorId) ?? null;
+}
+
+export function calcBagiHasil(labaBersih, persentase) {
+  return Math.round(labaBersih * (persentase / 100));
+}
