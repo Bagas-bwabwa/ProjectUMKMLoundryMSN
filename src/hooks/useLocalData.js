@@ -13,10 +13,24 @@ function load(key, initial) {
 
 export function useLocalData(key, initialData) {
   const [data, setData] = useState(() => load(key, initialData));
+  const storageKey = STORAGE_PREFIX + key;
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data));
-  }, [key, data]);
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  }, [storageKey, data]);
+
+  useEffect(() => {
+    function syncFromStorage(event) {
+      if (event.key !== storageKey || !event.newValue) return;
+      try {
+        setData(JSON.parse(event.newValue));
+      } catch {
+        // Ignore invalid payload.
+      }
+    }
+    window.addEventListener("storage", syncFromStorage);
+    return () => window.removeEventListener("storage", syncFromStorage);
+  }, [storageKey]);
 
   const add = useCallback((item) => {
     setData((prev) => {

@@ -47,7 +47,7 @@ export default function TransactionPage() {
     customer: "", phone: "", outlet: user?.outlet ?? "Laundry Panam",
     layananType: "Kiloan", service: "Cuci Setrika", weight: "",
     lineItems: [{ ...EMPTY_LINE }], diskon: 0, finishDate: "",
-    paymentStatus: "Belum Bayar", metodePembayaran: "Tunai",
+    paymentStatus: "Belum Lunas", metodePembayaran: "Tunai",
   });
 
   const outlets = getLocalData(CRUD_CONFIGS.outlets.storageKey, CRUD_CONFIGS.outlets.initialData);
@@ -107,7 +107,7 @@ export default function TransactionPage() {
       service: services[1]?.nama ?? services[0]?.nama ?? "",
       weight: "", lineItems: [{ ...EMPTY_LINE }],
       diskon: 0, finishDate: "",
-      paymentStatus: "Belum Bayar", metodePembayaran: "Tunai",
+      paymentStatus: "Belum Lunas", metodePembayaran: "Tunai",
     });
     setModalOpen(true);
   }
@@ -151,6 +151,12 @@ export default function TransactionPage() {
       metodePembayaran: form.metodePembayaran,
       status: "Menunggu",
       paymentStatus: form.paymentStatus,
+      paymentStatusHistory: [{
+        status: form.paymentStatus,
+        by: user?.name ?? "Kasir",
+        at: tanggal,
+        note: "Status pembayaran awal",
+      }],
       tanggal,
       finishDate: form.finishDate || null,
       cancelled: false,
@@ -248,6 +254,7 @@ export default function TransactionPage() {
               <th className="p-4 text-left">Layanan</th>
               <th className="p-4 text-left">Total</th>
               <th className="p-4 text-left">Status</th>
+              <th className="p-4 text-left">Status Bayar</th>
               <th className="p-4 text-center">Aksi</th>
             </tr>
           </thead>
@@ -265,6 +272,7 @@ export default function TransactionPage() {
                     {item.status}
                   </span>
                 </td>
+                <td className="p-4">{item.paymentStatus}</td>
                 <td className="p-4">
                   <div className="flex justify-center gap-2">
                     <Link to={`${ROUTES.TRANSACTIONS}/${item.id}`}
@@ -421,7 +429,7 @@ export default function TransactionPage() {
               <select value={form.paymentStatus}
                 onChange={(e) => updateField("paymentStatus", e.target.value)}
                 className="w-full border rounded-xl px-4 py-3">
-                <option>Belum Bayar</option><option>DP</option><option>Lunas</option>
+                <option>Belum Lunas</option><option>DP</option><option>Lunas</option>
               </select>
             </div>
           </div>

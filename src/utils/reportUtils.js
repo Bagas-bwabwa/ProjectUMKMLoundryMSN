@@ -14,6 +14,13 @@ export function formatDateISO(d) {
 
 export function normalizeTransaction(tx) {
   const layananType = tx.layananType ?? "Kiloan";
+  const paymentStatus = tx.paymentStatus ?? "Belum Lunas";
+  const defaultPaymentHistoryEntry = {
+    status: paymentStatus,
+    by: tx.kasir ?? "Sistem",
+    at: tx.tanggal ?? formatDateISO(new Date()),
+    note: "Status pembayaran awal",
+  };
   return {
     layananType,
     service: tx.service ?? "",
@@ -25,6 +32,8 @@ export function normalizeTransaction(tx) {
     kasir: tx.kasir ?? "—",
     kasirId: tx.kasirId ?? null,
     finishDate: tx.finishDate ?? null,
+    paymentStatus,
+    paymentStatusHistory: tx.paymentStatusHistory ?? [defaultPaymentHistoryEntry],
     statusHistory: tx.statusHistory ?? [
       { status: tx.status ?? "Menunggu", by: tx.kasir ?? "Sistem", at: tx.tanggal ?? formatDateISO(new Date()), note: "Transaksi dibuat" },
     ],
@@ -34,6 +43,15 @@ export function normalizeTransaction(tx) {
 
 export function getActiveTransactions(transactions) {
   return transactions.filter((t) => !t.cancelled).map(normalizeTransaction);
+}
+
+export function isCompletedTransaction(tx) {
+  const t = normalizeTransaction(tx);
+  return !t.cancelled && t.status === "Selesai";
+}
+
+export function getCompletedTransactions(transactions) {
+  return getActiveTransactions(transactions).filter(isCompletedTransaction);
 }
 
 export function getLayananLabel(tx) {
@@ -54,7 +72,9 @@ export function getQtyLabel(tx) {
 }
 
 export function filterTransactions(transactions, filters = {}) {
-  let list = getActiveTransactions(transactions);
+  let list = filters.includeUnfinished
+    ? getActiveTransactions(transactions)
+    : getCompletedTransactions(transactions);
 
   if (filters.outlet) list = list.filter((t) => t.outlet === filters.outlet);
   if (filters.kasir) list = list.filter((t) => t.kasir === filters.kasir);
@@ -232,6 +252,7 @@ export function buildFinancialSummary(transactions, expenses, filters) {
     labaBersih: pendapatan - pengeluaran,
     totalTransaksi: txFiltered.length,
     totalPelanggan: countUniqueCustomers(txFiltered),
+    totalItemLaundry: txFiltered.reduce((sum, t) => sum + Number(getQtyLabel(t) || 0), 0),
     transactions: txFiltered,
     perOutlet: groupByOutlet(txFiltered),
   };

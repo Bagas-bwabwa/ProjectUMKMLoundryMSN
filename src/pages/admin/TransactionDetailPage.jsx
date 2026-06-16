@@ -6,6 +6,16 @@ import { transactions as initialTx, formatRupiah } from "@/data/laundryData";
 import { getCurrentUser } from "@/services/authService";
 import { getLayananLabel, getQtyLabel, normalizeTransaction, TX_STATUSES } from "@/utils/reportUtils";
 import { ROUTES } from "@/router/paths";
+import { api } from "@/services/apiClient";
+
+function getPaymentStatusColor(status) {
+  switch (status) {
+    case "Lunas": return "bg-green-100 text-green-700";
+    case "DP": return "bg-yellow-100 text-yellow-700";
+    case "Belum Lunas": return "bg-red-100 text-red-700";
+    default: return "bg-slate-100 text-slate-700";
+  }
+}
 
 export default function TransactionDetailPage() {
   const { id } = useParams();
@@ -15,7 +25,10 @@ export default function TransactionDetailPage() {
   const transaction = raw ? normalizeTransaction(raw) : null;
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [statusNote, setStatusNote] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
   const [toast, setToast] = useState("");
+  const statusFlow = ["Menunggu", "Diproses", "Selesai"];
+  const PAYMENT_STATUSES = ["Belum Lunas", "DP", "Lunas"];
 
   if (!transaction) {
     return (
@@ -30,6 +43,11 @@ export default function TransactionDetailPage() {
 
   function handleStatusChange(newStatus) {
     if (newStatus === transaction.status || transaction.cancelled) return;
+    if (user?.role === "kasir") {
+      const currentIdx = statusFlow.indexOf(transaction.status);
+      const nextStatus = statusFlow[currentIdx + 1];
+      if (newStatus !== nextStatus) return;
+    }
     const at = new Date().toISOString().slice(0, 10);
     const entry = {
       status: newStatus,
@@ -39,10 +57,36 @@ export default function TransactionDetailPage() {
     };
     update(transaction.id, {
       status: newStatus,
+      finishDate: newStatus === "Selesai" ? at : transaction.finishDate,
       statusHistory: [...(transaction.statusHistory ?? []), entry],
     });
+    api.transactions.update(transaction.id, { status: newStatus, finishDate: newStatus === "Selesai" ? at : transaction.finishDate })
+      .catch(() => {});
     setStatusNote("");
     setToast(`Status diperbarui: ${newStatus}`);
+    setTimeout(() => setToast(""), 2500);
+  }
+
+  function handlePaymentStatusChange(newStatus) {
+    if (newStatus === transaction.paymentStatus || transaction.cancelled) return;
+    const at = new Date().toISOString().slice(0, 10);
+    const entry = {
+      status: newStatus,
+      by: user?.name ?? "Kasir",
+      at,
+      note: paymentNote || `Status pembayaran diubah ke ${newStatus}`,
+    };
+    const nextHistory = [...(transaction.paymentStatusHistory ?? []), entry];
+    update(transaction.id, {
+      paymentStatus: newStatus,
+      paymentStatusHistory: nextHistory,
+    });
+    api.transactions.update(transaction.id, {
+      paymentStatus: newStatus,
+      paymentStatusHistory: nextHistory,
+    }).catch(() => {});
+    setPaymentNote("");
+    setToast(`Status pembayaran: ${newStatus}`);
     setTimeout(() => setToast(""), 2500);
   }
 
@@ -52,17 +96,30 @@ export default function TransactionDetailPage() {
       status: "Dibatalkan",
       cancelled: true,
       paymentStatus: "Refund",
+      paymentStatusHistory: [
+        ...(transaction.paymentStatusHistory ?? []),
+        { status: "Refund", by: user?.name ?? "Kasir", at, note: "Transaksi dibatalkan" },
+      ],
       statusHistory: [
         ...(transaction.statusHistory ?? []),
         { status: "Dibatalkan", by: user?.name ?? "Kasir", at, note: "Transaksi dibatalkan" },
       ],
     });
+    api.transactions.update(transaction.id, { status: "Dibatalkan", cancelled: true, paymentStatus: "Refund" })
+      .catch(() => {});
     setShowCancelConfirm(false);
     setToast("Transaksi dibatalkan");
     setTimeout(() => setToast(""), 2500);
   }
 
   const canUpdateStatus = !transaction.cancelled && (user?.role === "kasir" || user?.role === "admin");
+  const statusOptions = user?.role === "kasir"
+    ? (() => {
+      const currentIdx = statusFlow.indexOf(transaction.status);
+      const nextStatus = statusFlow[currentIdx + 1];
+      return nextStatus ? [nextStatus] : [];
+    })()
+    : TX_STATUSES;
 
   return (
     <div>
@@ -160,7 +217,7 @@ export default function TransactionDetailPage() {
             </div>
             <div><p className="text-slate-500 text-sm">Metode Bayar</p><p>{transaction.metodePembayaran}</p></div>
             <div><p className="text-slate-500 text-sm">Status Bayar</p>
-              <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">{transaction.paymentStatus}</span>
+              <span className={`px-3 py-1 rounded-full text-sm ${getPaymentStatusColor(transaction.paymentStatus)}`}>{transaction.paymentStatus}</span>
             </div>
           </div>
         </div>
@@ -173,7 +230,7 @@ export default function TransactionDetailPage() {
                 Status saat ini: <strong>{transaction.status}</strong>
               </p>
               <div className="flex flex-wrap gap-2 mb-3">
-                {TX_STATUSES.map((s) => (
+                {statusOptions.map((s) => (
                   <button key={s} type="button" onClick={() => handleStatusChange(s)}
                     disabled={s === transaction.status}
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
@@ -191,6 +248,31 @@ export default function TransactionDetailPage() {
             </div>
           )}
 
+          {canUpdateStatus && (
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="font-bold text-lg mb-4">Update Status Pembayaran</h2>
+              <p className="text-sm text-slate-500 mb-3">
+                Status bayar saat ini: <strong>{transaction.paymentStatus}</strong>
+              </p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {PAYMENT_STATUSES.map((s) => (
+                  <button key={s} type="button" onClick={() => handlePaymentStatusChange(s)}
+                    disabled={s === transaction.paymentStatus}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                      s === transaction.paymentStatus
+                        ? "bg-cyan-500 text-white"
+                        : "bg-slate-100 hover:bg-cyan-100 text-slate-700"
+                    }`}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+              <input type="text" placeholder="Catatan pembayaran (opsional)"
+                value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)}
+                className="w-full border rounded-xl px-3 py-2 text-sm" />
+            </div>
+          )}
+
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
               <Clock size={18} /> Riwayat Status
@@ -198,6 +280,21 @@ export default function TransactionDetailPage() {
             <div className="space-y-4">
               {(transaction.statusHistory ?? []).slice().reverse().map((entry, i) => (
                 <div key={i} className="border-l-4 border-cyan-400 pl-4">
+                  <p className="font-semibold text-sm">{entry.status}</p>
+                  <p className="text-xs text-slate-500">{entry.at} — {entry.by}</p>
+                  {entry.note && <p className="text-xs text-slate-600 mt-1">{entry.note}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
+              <Clock size={18} /> Riwayat Status Pembayaran
+            </h2>
+            <div className="space-y-4">
+              {(transaction.paymentStatusHistory ?? []).slice().reverse().map((entry, i) => (
+                <div key={i} className="border-l-4 border-emerald-400 pl-4">
                   <p className="font-semibold text-sm">{entry.status}</p>
                   <p className="text-xs text-slate-500">{entry.at} — {entry.by}</p>
                   {entry.note && <p className="text-xs text-slate-600 mt-1">{entry.note}</p>}

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import {
-  TrendingUp, TrendingDown, BarChart3, Users, Receipt, Calendar,
+  TrendingUp, TrendingDown, BarChart3, Users, Receipt, Calendar, Download,
 } from "lucide-react";
 import { RevenueBarChart, RevenueLineChart } from "@/components/charts/RevenueChart";
 import { useLocalData } from "@/hooks/useLocalData";
@@ -25,6 +25,7 @@ import {
   groupByDate,
 } from "@/utils/reportUtils";
 import { ROUTES } from "@/router/paths";
+import { exportToPDF } from "@/utils/exportUtils";
 
 function GrowthBadge({ value }) {
   const up = value >= 0;
@@ -107,6 +108,79 @@ export default function InvestorReportPage() {
   const weeklyLabels = getWeeklyDayLabels(periodRange.dateFrom);
   const weeklyRevenue = getWeeklyRevenue(txData, periodRange.dateFrom, periodRange.dateTo);
   const monthlyWeeks = getMonthlyWeeks(summary.transactions, periodRange.dateFrom, periodRange.dateTo);
+  const reportLabels = dailyBreakdown.map((d) => d.tanggal);
+  const reportValues = dailyBreakdown.map((d) => d.pendapatan);
+
+  function buildPdfChart(labels, values) {
+    if (!labels.length) return "<p style='font-size:12px;color:#64748b'>Belum ada data grafik pada periode ini.</p>";
+    const max = Math.max(...values, 1);
+    const bars = labels.map((label, idx) => {
+      const height = Math.max(8, Math.round((values[idx] / max) * 110));
+      const x = 40 + idx * 56;
+      const y = 140 - height;
+      return `
+        <rect x="${x}" y="${y}" width="30" height="${height}" fill="#06b6d4" rx="4"></rect>
+        <text x="${x + 15}" y="156" text-anchor="middle" font-size="9" fill="#334155">${label.slice(5)}</text>
+      `;
+    }).join("");
+    const width = Math.max(320, labels.length * 56 + 80);
+    return `
+      <svg width="${width}" height="170" viewBox="0 0 ${width} 170" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
+        <line x1="30" y1="140" x2="${width - 20}" y2="140" stroke="#94a3b8" stroke-width="1" />
+        ${bars}
+      </svg>
+    `;
+  }
+
+  function handleExportInvestorPDF() {
+    const printedAt = new Date().toLocaleString("id-ID");
+    const periode = `${periodRange.dateFrom} s.d. ${periodRange.dateTo}`;
+    const rows = summary.transactions.map((tx, idx) => `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${tx.invoice}</td>
+        <td>${tx.tanggal}</td>
+        <td>${tx.customer}</td>
+        <td>${tx.outlet}</td>
+        <td>${tx.paymentStatus}</td>
+        <td>${tx.layananType === "Satuan" ? tx.lineItems.reduce((s, i) => s + Number(i.qty || 0), 0) : tx.weight} ${tx.layananType === "Satuan" ? "item" : "kg"}</td>
+        <td>Rp ${Number(tx.total || 0).toLocaleString("id-ID")}</td>
+      </tr>
+    `).join("");
+    const outletLabel = filterOutlet || "Semua Outlet Investasi";
+    const html = `
+      <div style="font-size:12px;line-height:1.6;margin-bottom:12px">
+        <p><b>Nama Outlet:</b> ${outletLabel}</p>
+        <p><b>Periode Laporan:</b> ${periode}</p>
+        <p><b>Tanggal Cetak:</b> ${printedAt}</p>
+        <p><b>Nama Investor/Pengunduh:</b> ${user?.name ?? "Investor"}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 16px">
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px"><b>Total Transaksi</b><br/>${summary.totalTransaksi}</div>
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px"><b>Total Pendapatan</b><br/>Rp ${Number(summary.pendapatan || 0).toLocaleString("id-ID")}</div>
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px"><b>Jumlah Item Laundry</b><br/>${summary.totalItemLaundry}</div>
+      </div>
+      <h3 style="margin:10px 0 8px">Grafik Pendapatan</h3>
+      ${buildPdfChart(reportLabels, reportValues)}
+      <h3 style="margin:14px 0 8px">Rincian Transaksi Selesai</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr>
+            <th style="border:1px solid #e2e8f0;padding:6px;background:#f1f5f9">No</th>
+            <th style="border:1px solid #e2e8f0;padding:6px;background:#f1f5f9">Invoice</th>
+            <th style="border:1px solid #e2e8f0;padding:6px;background:#f1f5f9">Tanggal</th>
+            <th style="border:1px solid #e2e8f0;padding:6px;background:#f1f5f9">Pelanggan</th>
+            <th style="border:1px solid #e2e8f0;padding:6px;background:#f1f5f9">Outlet</th>
+            <th style="border:1px solid #e2e8f0;padding:6px;background:#f1f5f9">Status Bayar</th>
+            <th style="border:1px solid #e2e8f0;padding:6px;background:#f1f5f9">Item/Kg</th>
+            <th style="border:1px solid #e2e8f0;padding:6px;background:#f1f5f9">Total</th>
+          </tr>
+        </thead>
+        <tbody>${rows || "<tr><td colspan='8' style='border:1px solid #e2e8f0;padding:8px;text-align:center'>Tidak ada transaksi selesai</td></tr>"}</tbody>
+      </table>
+    `;
+    exportToPDF(`Laporan Investor ${tab.toUpperCase()}`, html);
+  }
 
   const tabs = [
     { id: "harian", label: "Harian" },
@@ -122,6 +196,10 @@ export default function InvestorReportPage() {
           <p className="text-slate-500">Outlet investasi: {investedOutlets.join(", ")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={handleExportInvestorPDF}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-2 rounded-xl text-sm shadow-md">
+            <Download size={16} /> Export PDF
+          </button>
           <select value={filterOutlet} onChange={(e) => setFilterOutlet(e.target.value)}
             className="border rounded-xl px-4 py-2 text-sm">
             <option value="">Semua Outlet Investasi</option>
@@ -148,7 +226,7 @@ export default function InvestorReportPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard label="Total Pendapatan" value={formatRupiah(summary.pendapatan)} icon={BarChart3} color="text-green-600" />
         <StatCard label="Jumlah Transaksi" value={String(summary.totalTransaksi)} icon={Receipt} />
-        <StatCard label="Jumlah Pelanggan" value={String(summary.totalPelanggan)} icon={Users} />
+        <StatCard label="Jumlah Item Laundry" value={String(summary.totalItemLaundry)} icon={Users} />
         <StatCard label="Bagi Hasil Anda" value={formatRupiah(bagiHasil)} icon={TrendingUp} color="text-cyan-600" />
       </div>
 
@@ -262,6 +340,47 @@ export default function InvestorReportPage() {
           </div>
         </div>
       )}
+
+      <div className="bg-white rounded-2xl shadow-md p-6">
+        <h3 className="font-bold mb-4">Daftar Transaksi Selesai</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] text-sm">
+            <thead>
+              <tr className="border-b bg-slate-50">
+                <th className="py-2 text-left">Invoice</th>
+                <th className="py-2 text-left">Tanggal</th>
+                <th className="py-2 text-left">Pelanggan</th>
+                <th className="py-2 text-left">Outlet</th>
+                <th className="py-2 text-left">Status Bayar</th>
+                <th className="py-2 text-left">Item/Kg</th>
+                <th className="py-2 text-left">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {summary.transactions.map((tx) => (
+                <tr key={tx.id} className="border-b">
+                  <td className="py-2">{tx.invoice}</td>
+                  <td>{tx.tanggal}</td>
+                  <td>{tx.customer}</td>
+                  <td>{tx.outlet}</td>
+                  <td>{tx.paymentStatus}</td>
+                  <td>
+                    {tx.layananType === "Satuan"
+                      ? `${tx.lineItems.reduce((s, i) => s + Number(i.qty || 0), 0)} item`
+                      : `${tx.weight} kg`}
+                  </td>
+                  <td className="text-green-600 font-semibold">{formatRupiah(tx.total)}</td>
+                </tr>
+              ))}
+              {summary.transactions.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-4 text-center text-slate-500">Belum ada transaksi selesai pada periode ini.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
