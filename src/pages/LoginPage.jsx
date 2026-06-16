@@ -96,10 +96,14 @@ export default function LoginPage() {
     try {
       await loginRequest({ email: em, password });
       navigate(from, { replace: true });
-    } catch {
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Email atau Password Anda tidak valid.";
       setBanner({
         kind: "error",
-        message: "Email atau Password Anda tidak valid.",
+        message,
       });
     }
   }

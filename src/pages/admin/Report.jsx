@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import {
   BarChart3, TrendingUp, Wallet, Receipt, Download, FileSpreadsheet, Search,
@@ -22,6 +22,7 @@ import {
 } from "@/utils/reportUtils";
 import { exportToExcel, exportToPDF, tableToHtml } from "@/utils/exportUtils";
 import { ROUTES } from "@/router/paths";
+import { api } from "@/services/apiClient";
 
 const REPORT_COLUMNS = [
   { label: "ID", getValue: (r) => r.invoice },
@@ -45,8 +46,10 @@ export default function ReportPage() {
     return <Navigate to={ROUTES.INVESTOR_REPORTS} replace />;
   }
 
-  const { data: txData } = useLocalData("transactions", initialTx);
-  const { data: expData } = useLocalData("expenses", initialExpenses);
+  const { data: localTxData } = useLocalData("transactions", initialTx);
+  const { data: localExpData } = useLocalData("expenses", initialExpenses);
+  const [txData, setTxData] = useState(localTxData);
+  const [expData, setExpData] = useState(localExpData);
   const outlets = getLocalData(CRUD_CONFIGS.outlets.storageKey, CRUD_CONFIGS.outlets.initialData);
   const kasirList = getLocalData("kasirAccounts", CRUD_CONFIGS.kasirAccounts.initialData);
 
@@ -57,6 +60,31 @@ export default function ReportPage() {
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchInitialData() {
+      try {
+        const [txRes, expRes] = await Promise.all([
+          api.transactions.getAll(),
+          api.expenses.getAll(),
+        ]);
+        if (!mounted) return;
+        const txRows = Array.isArray(txRes?.data?.data) ? txRes.data.data : txRes?.data;
+        const expRows = Array.isArray(expRes?.data?.data) ? expRes.data.data : expRes?.data;
+        if (Array.isArray(txRows)) setTxData(txRows);
+        if (Array.isArray(expRows)) setExpData(expRows);
+      } catch {
+        if (!mounted) return;
+        setTxData(localTxData);
+        setExpData(localExpData);
+      }
+    }
+    fetchInitialData();
+    return () => {
+      mounted = false;
+    };
+  }, [localTxData, localExpData]);
 
   const periodRange = useMemo(() => getDateRange(periode), [periode]);
   const effectiveFrom = dateFrom || periodRange.dateFrom;

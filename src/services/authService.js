@@ -1,4 +1,4 @@
-import { apiClient } from "./apiClient";
+import { api, apiClient } from "./apiClient";
 import { getLocalData } from "@/hooks/useLocalData";
 import { kasirAccounts as initialKasirAccounts } from "@/data/laundryData";
 
@@ -70,9 +70,30 @@ function readSession() {
 function writeSession(session) {
   if (session) {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    localStorage.setItem("authToken", session.token);
+    localStorage.setItem("user", JSON.stringify(session.user));
   } else {
     localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
   }
+}
+
+function normalizeApiSession(payload) {
+  const token = payload?.token ?? payload?.accessToken ?? payload?.data?.token ?? null;
+  const apiUser = payload?.user ?? payload?.data?.user ?? payload?.data ?? null;
+  if (!token || !apiUser) return null;
+
+  const user = {
+    email: apiUser.email ?? "",
+    name: apiUser.name ?? apiUser.nama ?? "User",
+    role: apiUser.role ?? "admin",
+    outlet: apiUser.outlet ?? null,
+    kasirId: apiUser.kasirId ?? null,
+    investorId: apiUser.investorId ?? null,
+    investedOutlets: apiUser.investedOutlets ?? [],
+  };
+  return { token, user };
 }
 
 function findKasirAccount(email, password) {
@@ -91,6 +112,16 @@ function findKasirAccount(email, password) {
 export async function login(credentials) {
   const email = credentials.email.trim().toLowerCase();
   const password = credentials.password;
+  try {
+    const response = await api.auth.login({ email, password });
+    const normalized = normalizeApiSession(response?.data);
+    if (normalized) {
+      writeSession(normalized);
+      return normalized;
+    }
+  } catch {
+    // Fallback ke akun demo/local jika backend auth belum aktif.
+  }
 
   let account = DEMO_ACCOUNTS.find(
     (a) => a.email.toLowerCase() === email && a.password === password
@@ -146,7 +177,7 @@ export function logout() {
 }
 
 export function getStoredToken() {
-  return readSession()?.token ?? null;
+  return readSession()?.token ?? localStorage.getItem("authToken") ?? null;
 }
 
 export function getCurrentUser() {
