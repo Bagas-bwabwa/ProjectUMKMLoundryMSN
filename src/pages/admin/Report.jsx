@@ -23,6 +23,7 @@ import {
 import { exportToExcel, exportToPDF, tableToHtml } from "@/utils/exportUtils";
 import { ROUTES } from "@/router/paths";
 import { api } from "@/services/apiClient";
+import { fetchTransactionsFromApi, hasApiSession } from "@/services/transactionService";
 
 const REPORT_COLUMNS = [
   { label: "ID", getValue: (r) => r.invoice },
@@ -65,12 +66,11 @@ export default function ReportPage() {
     let mounted = true;
     async function fetchInitialData() {
       try {
-        const [txRes, expRes] = await Promise.all([
-          api.transactions.getAll(),
+        const [txRows, expRes] = await Promise.all([
+          hasApiSession() ? fetchTransactionsFromApi() : Promise.resolve(localTxData),
           api.expenses.getAll(),
         ]);
         if (!mounted) return;
-        const txRows = Array.isArray(txRes?.data?.data) ? txRes.data.data : txRes?.data;
         const expRows = Array.isArray(expRes?.data?.data) ? expRes.data.data : expRes?.data;
         if (Array.isArray(txRows)) setTxData(txRows);
         if (Array.isArray(expRows)) setExpData(expRows);

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Search, Eye, Printer, Save, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -8,6 +8,11 @@ import { CRUD_CONFIGS } from "@/data/pageConfigs";
 import { getCurrentUser } from "@/services/authService";
 import { getLayananLabel, normalizeTransaction } from "@/utils/reportUtils";
 import { ROUTES } from "@/router/paths";
+import {
+  createTransactionOnApi,
+  fetchTransactionsFromApi,
+  hasApiSession,
+} from "@/services/transactionService";
 
 function getStatusColor(status) {
   switch (status) {
@@ -39,7 +44,7 @@ function calcTotal(form, services, itemList) {
 
 export default function TransactionPage() {
   const user = getCurrentUser();
-  const { data, add } = useLocalData("transactions", initialTx);
+  const { data, setData, add } = useLocalData("transactions", initialTx);
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState("");
@@ -74,6 +79,23 @@ export default function TransactionPage() {
   }, [filtered]);
 
   const { subtotal, total } = calcTotal(form, services, itemList);
+
+  useEffect(() => {
+    let mounted = true;
+    async function syncFromApi() {
+      if (!hasApiSession()) return;
+      try {
+        const mapped = await fetchTransactionsFromApi();
+        if (mounted && mapped.length) setData(mapped);
+      } catch {
+        // fallback: tetap pakai local data
+      }
+    }
+    syncFromApi();
+    return () => {
+      mounted = false;
+    };
+  }, [setData]);
 
   function updateField(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -125,7 +147,7 @@ export default function TransactionPage() {
       });
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
     if (!form.customer.trim()) return;
     if (form.layananType === "Kiloan" && !form.weight) return;
@@ -136,7 +158,7 @@ export default function TransactionPage() {
     const lineItems = form.layananType === "Satuan" ? buildLineItems() : [];
     const { subtotal: sub, total: tot } = calcTotal(form, services, itemList);
 
-    add({
+    const draftTx = {
       invoice: `INV-${String(nextId).padStart(3, "0")}`,
       customer: form.customer,
       phone: form.phone,
@@ -165,7 +187,30 @@ export default function TransactionPage() {
       statusHistory: [{
         status: "Menunggu", by: user?.name ?? "Kasir", at: tanggal, note: "Transaksi dibuat",
       }],
-    });
+    };
+
+    add(draftTx);
+
+    if (hasApiSession()) {
+      try {
+        const created = await createTransactionOnApi(form, {
+          subtotal: sub,
+          total: tot,
+          lineItems,
+          tanggal,
+          user,
+        });
+        if (created?.apiId || created?.id) {
+          setData((prev) => prev.map((tx) => (
+            tx.invoice === draftTx.invoice
+              ? { ...tx, apiId: created.apiId ?? created.id }
+              : tx
+          )));
+        }
+      } catch {
+        // fallback: transaksi lokal sudah tersimpan
+      }
+    }
 
     setToast("Transaksi berhasil disimpan");
     setTimeout(() => setToast(""), 2500);

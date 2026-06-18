@@ -6,7 +6,7 @@ import { transactions as initialTx, formatRupiah } from "@/data/laundryData";
 import { getCurrentUser } from "@/services/authService";
 import { getLayananLabel, getQtyLabel, normalizeTransaction, TX_STATUSES } from "@/utils/reportUtils";
 import { ROUTES } from "@/router/paths";
-import { api } from "@/services/apiClient";
+import { updateTransactionOnApi } from "@/services/transactionService";
 
 function getPaymentStatusColor(status) {
   switch (status) {
@@ -60,8 +60,10 @@ export default function TransactionDetailPage() {
       finishDate: newStatus === "Selesai" ? at : transaction.finishDate,
       statusHistory: [...(transaction.statusHistory ?? []), entry],
     });
-    api.transactions.update(transaction.id, { status: newStatus, finishDate: newStatus === "Selesai" ? at : transaction.finishDate })
-      .catch(() => {});
+    updateTransactionOnApi(raw?.apiId ?? transaction.id, {
+      status: newStatus,
+      finishDate: newStatus === "Selesai" ? at : transaction.finishDate,
+    }).catch(() => {});
     setStatusNote("");
     setToast(`Status diperbarui: ${newStatus}`);
     setTimeout(() => setToast(""), 2500);
@@ -81,7 +83,7 @@ export default function TransactionDetailPage() {
       paymentStatus: newStatus,
       paymentStatusHistory: nextHistory,
     });
-    api.transactions.update(transaction.id, {
+    updateTransactionOnApi(raw?.apiId ?? transaction.id, {
       paymentStatus: newStatus,
       paymentStatusHistory: nextHistory,
     }).catch(() => {});
@@ -105,7 +107,7 @@ export default function TransactionDetailPage() {
         { status: "Dibatalkan", by: user?.name ?? "Kasir", at, note: "Transaksi dibatalkan" },
       ],
     });
-    api.transactions.update(transaction.id, { status: "Dibatalkan", cancelled: true, paymentStatus: "Refund" })
+    updateTransactionOnApi(raw?.apiId ?? transaction.id, { status: "Dibatalkan", cancelled: true })
       .catch(() => {});
     setShowCancelConfirm(false);
     setToast("Transaksi dibatalkan");

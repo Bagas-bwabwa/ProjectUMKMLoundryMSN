@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// Base API URL - gunakan URL langsung untuk menghindari error environment variables
-const API_BASE_URL = "http://localhost:5000/api";
+// Prioritaskan backend Laravel baru, tetap bisa override via .env
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
 
 /**
  * Client HTTP untuk Laundry Management System Backend
@@ -44,6 +44,8 @@ export const api = {
     login: (credentials) => apiClient.post("/auth/login", credentials),
     register: (userData) => apiClient.post("/auth/register", userData),
     getCurrentUser: () => apiClient.get("/auth/me"),
+    logout: () => apiClient.post("/auth/logout"),
+    refreshToken: () => apiClient.post("/auth/refresh-token"),
   },
 
   // Customer endpoints
@@ -64,6 +66,15 @@ export const api = {
     update: (id, data) => apiClient.put(`/services/${id}`, data),
     delete: (id) => apiClient.delete(`/services/${id}`),
     getStats: () => apiClient.get("/services/stats/popular"),
+  },
+
+  // Outlet endpoints
+  outlets: {
+    getAll: (params) => apiClient.get("/outlets", { params }),
+    getById: (id) => apiClient.get(`/outlets/${id}`),
+    create: (data) => apiClient.post("/outlets", data),
+    update: (id, data) => apiClient.put(`/outlets/${id}`, data),
+    delete: (id) => apiClient.delete(`/outlets/${id}`),
   },
 
   // Transaction endpoints

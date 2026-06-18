@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import {
   TrendingUp, TrendingDown, BarChart3, Users, Receipt, Calendar, Download,
@@ -26,6 +26,7 @@ import {
 } from "@/utils/reportUtils";
 import { ROUTES } from "@/router/paths";
 import { exportToPDF } from "@/utils/exportUtils";
+import { fetchTransactionsFromApi, hasApiSession } from "@/services/transactionService";
 
 function GrowthBadge({ value }) {
   const up = value >= 0;
@@ -59,12 +60,29 @@ export default function InvestorReportPage() {
 
   const investedOutlets = getInvestedOutlets();
   const investorRecord = getInvestorById(user?.investorId);
-  const { data: txData } = useLocalData("transactions", initialTx);
+  const { data: txData, setData: setTxData } = useLocalData("transactions", initialTx);
 
   const [tab, setTab] = useState("harian");
   const [filterOutlet, setFilterOutlet] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    async function syncTx() {
+      if (!hasApiSession()) return;
+      try {
+        const mapped = await fetchTransactionsFromApi();
+        if (mounted && mapped.length) setTxData(mapped);
+      } catch {
+        // fallback: tetap pakai local data
+      }
+    }
+    syncTx();
+    return () => {
+      mounted = false;
+    };
+  }, [setTxData]);
 
   const periodMap = { harian: "harian", mingguan: "mingguan", bulanan: "bulanan" };
   const periodRange = useMemo(() => {

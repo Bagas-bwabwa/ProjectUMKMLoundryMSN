@@ -88,7 +88,8 @@ function normalizeApiSession(payload) {
     email: apiUser.email ?? "",
     name: apiUser.name ?? apiUser.nama ?? "User",
     role: apiUser.role ?? "admin",
-    outlet: apiUser.outlet ?? null,
+    outlet: apiUser.outlet?.name ?? apiUser.outlet ?? null,
+    outletId: apiUser.outlet_id ?? apiUser.outlet?.id ?? null,
     kasirId: apiUser.kasirId ?? null,
     investorId: apiUser.investorId ?? null,
     investedOutlets: apiUser.investedOutlets ?? [],
@@ -119,8 +120,12 @@ export async function login(credentials) {
       writeSession(normalized);
       return normalized;
     }
-  } catch {
-    // Fallback ke akun demo/local jika backend auth belum aktif.
+  } catch (error) {
+    // Jika backend hidup tapi kredensial salah, lempar error asli.
+    if (error?.response?.status && error.response.status < 500) {
+      throw error;
+    }
+    // Fallback ke akun demo/local jika backend belum aktif/timeout.
   }
 
   let account = DEMO_ACCOUNTS.find(
@@ -173,6 +178,7 @@ export async function login(credentials) {
 }
 
 export function logout() {
+  api.auth.logout().catch(() => {});
   writeSession(null);
 }
 
