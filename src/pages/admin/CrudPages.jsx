@@ -3,9 +3,13 @@ import { Link } from "react-router-dom";
 import { Plus, Search, Pencil, Trash2, Eye } from "lucide-react";
 import { Modal, ConfirmDialog } from "@/components/ui/Modal";
 import { useLocalData, getLocalData } from "@/hooks/useLocalData";
+import { useApiData } from "@/hooks/useApiData";
 import { getCurrentUser } from "@/services/authService";
 import { formatRupiah } from "@/data/laundryData";
 import { CRUD_CONFIGS } from "@/data/pageConfigs";
+
+/** Storage keys that have a corresponding backend API endpoint */
+const API_BACKED_KEYS = new Set(["outlets", "services", "items", "expenses"]);
 
 function badgeClass(color) {
   const map = {
@@ -87,10 +91,10 @@ function renderCell(col, row) {
 export function CrudPage({ configKey }) {
   const config = CRUD_CONFIGS[configKey];
   const user = getCurrentUser();
-  const { data, add, update, remove } = useLocalData(
-    config.storageKey,
-    config.initialData
-  );
+  const useApiBacked = API_BACKED_KEYS.has(config.storageKey);
+  const apiHook = useApiData(config.storageKey, config.initialData);
+  const localHook = useLocalData(config.storageKey, config.initialData);
+  const { data, add, update, remove } = useApiBacked ? apiHook : localHook;
 
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Prioritaskan backend Laravel baru, tetap bisa override via .env
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://backend-laravel11.test/api";
 
 /**
  * Client HTTP untuk Laundry Management System Backend
