@@ -151,7 +151,7 @@ export function MainLayout() {
             <div className="flex items-center gap-2">
               <Sparkles className="text-cyan-500" />
               <h1 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                LaundryMSN
+                Laundry Qucuci
               </h1>
             </div>
           )}
