@@ -3,10 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { ROUTES } from "@/router/paths";
 import {
-  APP_LOGIN_EMAIL,
-  APP_LOGIN_PASSWORD,
-  DEMO_ACCOUNTS,
-  getKasirDemoAccounts,
   login as loginRequest,
 } from "@/services/authService";
 
@@ -69,8 +65,8 @@ export default function LoginPage() {
     location.state?.from?.pathname ??
     ROUTES.HOME_REDIRECT;
 
-  const [email, setEmail] = useState(APP_LOGIN_EMAIL);
-  const [password, setPassword] = useState(APP_LOGIN_PASSWORD);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [banner, setBanner] = useState(null);
 
   const isLoading = banner?.kind === "loading";
@@ -109,8 +105,6 @@ export default function LoginPage() {
   }
 
   const year = new Date().getFullYear();
-  const allKasir = getKasirDemoAccounts();
-  const kasirAccounts = allKasir.slice(0, 5);
 
   return (
     <div className="w-full rounded-[1.75rem] border border-border bg-card p-8 shadow-[0_25px_60px_-15px_rgba(8,47,73,0.55)] md:p-10">
@@ -158,7 +152,7 @@ export default function LoginPage() {
               clearErrorBannerOnEdit();
             }}
             className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground shadow-sm outline-none ring-primary/20 transition-[box-shadow,border-color] placeholder:text-muted-foreground focus:border-primary/50 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60"
-            placeholder="nama@email.com"
+            placeholder="masukkan email"
           />
         </div>
 
@@ -179,7 +173,8 @@ export default function LoginPage() {
               setPassword(ev.target.value);
               clearErrorBannerOnEdit();
             }}
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground shadow-sm outline-none ring-primary/20 transition-[box-shadow,border-color] focus:border-primary/50 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground shadow-sm outline-none ring-primary/20 transition-[box-shadow,border-color] focus:border-primary/50 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60 placeholder:text-muted-foreground"
+            placeholder="masukkan password"
           />
         </div>
 
@@ -192,33 +187,7 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 text-left">
-        <p className="text-xs font-semibold text-slate-600 mb-2">Akun demo:</p>
-        <ul className="text-[11px] text-slate-500 space-y-1">
-          {DEMO_ACCOUNTS.filter((acc) => acc.role === "admin").map((acc) => (
-            <li key={acc.email}>
-              <span className="font-medium capitalize">{acc.role}</span>: {acc.email} / {acc.password}
-            </li>
-          ))}
-        </ul>
-        <p className="text-xs font-semibold text-slate-600 mt-3 mb-1">Kasir (per outlet, password: kasir123):</p>
-        <ul className="text-[11px] text-slate-500 space-y-1 max-h-28 overflow-y-auto">
-          {kasirAccounts.map((acc) => (
-            <li key={acc.id}>{acc.outlet} — {acc.username}</li>
-          ))}
-          {allKasir.length > 5 && (
-            <li className="text-slate-400 italic">+ {allKasir.length - 5} outlet lainnya</li>
-          )}
-        </ul>
-        <p className="text-xs font-semibold text-slate-600 mt-3 mb-1">Investor (per outlet):</p>
-        <ul className="text-[11px] text-slate-500 space-y-1">
-          {DEMO_ACCOUNTS.filter((acc) => acc.role === "investor").map((acc) => (
-            <li key={acc.email}>
-              {acc.investedOutlets?.[0] ?? "Outlet"} — {acc.email} / {acc.password}
-            </li>
-          ))}
-        </ul>
-      </div>
+
 
       <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
         © {year} Qucuci Management · Panel laundry terpusat
