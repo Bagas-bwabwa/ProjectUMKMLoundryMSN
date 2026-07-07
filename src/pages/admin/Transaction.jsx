@@ -206,14 +206,17 @@ export default function TransactionPage() {
               ? { ...tx, apiId: created.apiId ?? created.id }
               : tx
           )));
+          setToast("Transaksi berhasil disimpan (Tersinkron ke Database)");
         }
-      } catch {
-        // fallback: transaksi lokal sudah tersimpan
+      } catch (error) {
+        console.error("API Error:", error);
+        setToast("Peringatan: Gagal menyimpan ke Database, hanya tersimpan di memori browser!");
       }
+    } else {
+      setToast("Transaksi berhasil disimpan (Hanya di browser)");
     }
 
-    setToast("Transaksi berhasil disimpan");
-    setTimeout(() => setToast(""), 2500);
+    setTimeout(() => setToast(""), 4000);
     setModalOpen(false);
   }
 
