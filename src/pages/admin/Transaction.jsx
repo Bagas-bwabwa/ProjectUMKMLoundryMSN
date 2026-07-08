@@ -59,6 +59,7 @@ export default function TransactionPage() {
   const services = getLocalData(CRUD_CONFIGS.services.storageKey, CRUD_CONFIGS.services.initialData);
   const itemList = getLocalData(CRUD_CONFIGS.items.storageKey, CRUD_CONFIGS.items.initialData);
 
+  // Search & Filter 
   const filtered = useMemo(() => {
     let list = data.map(normalizeTransaction);
     if (user?.role === "kasir") list = list.filter((t) => t.outlet === user.outlet);
@@ -80,6 +81,7 @@ export default function TransactionPage() {
 
   const { subtotal, total } = calcTotal(form, services, itemList);
 
+  //  Hook useEffect
   useEffect(() => {
     let mounted = true;
     async function syncFromApi() {
@@ -345,11 +347,10 @@ export default function TransactionPage() {
             {["Kiloan", "Satuan"].map((type) => (
               <button key={type} type="button"
                 onClick={() => updateField("layananType", type)}
-                className={`px-4 py-2 rounded-xl font-medium transition ${
-                  form.layananType === type
+                className={`px-4 py-2 rounded-xl font-medium transition ${form.layananType === type
                     ? "bg-cyan-500 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}>
+                  }`}>
                 Laundry {type}
               </button>
             ))}

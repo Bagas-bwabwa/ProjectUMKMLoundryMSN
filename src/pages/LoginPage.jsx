@@ -27,6 +27,7 @@ function CredentialWarningIcon() {
   );
 }
 
+// Banner Loading & Error
 function LoginStatusBanner({ banner }) {
   if (!banner) return null;
 
@@ -64,7 +65,8 @@ export default function LoginPage() {
   const from =
     location.state?.from?.pathname ??
     ROUTES.HOME_REDIRECT;
-
+  
+  // Handle State 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [banner, setBanner] = useState(null);
@@ -74,7 +76,7 @@ export default function LoginPage() {
   function clearErrorBannerOnEdit() {
     setBanner((b) => (b?.kind === "error" ? null : b));
   }
-
+  // Request Handler 
   async function handleSubmit(e) {
     e.preventDefault();
 

@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/routing/ProtectedRoute";
 import { InvestorRouteGuard } from "@/components/routing/InvestorRouteGuard";
 import { PageLoading } from "@/components/layout/PageLoading";
 
+// Lazy Loading (31)
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
@@ -29,6 +30,7 @@ const MaterialUsagePage = lazy(() => import("@/pages/admin/CrudPages").then((m) 
 const SalaryPage = lazy(() => import("@/pages/admin/CrudPages").then((m) => ({ default: m.SalaryPage })));
 const DailyReportPage = lazy(() => import("@/pages/admin/CrudPages").then((m) => ({ default: m.DailyReportPage })));
 
+// Suspense & PageLoading 
 function RootSuspenseLayout() {
   return (
     <Suspense fallback={<PageLoading />}>
@@ -52,6 +54,7 @@ const routeTree = [
         path: "login",
         element: <GuestRoute />,
         children: [
+          //  Multi Layout & Nested Routes (89)
           {
             element: <AuthLayout />,
             children: [{ index: true, element: <LoginPage /> }],
@@ -69,6 +72,7 @@ const routeTree = [
               { path: "reports", element: <ReportPage /> },
               { path: "investor-reports", element: <InvestorReportPage /> },
               {
+                // Dyamic Routes
                 element: <InvestorRouteGuard />,
                 children: [
                   { path: "outlets", element: <OutletPage /> },

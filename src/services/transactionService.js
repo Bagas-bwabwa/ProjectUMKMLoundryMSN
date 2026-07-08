@@ -9,7 +9,11 @@ import {
 import { getStoredToken } from "@/services/authService";
 
 export function hasApiSession() {
-  return Boolean(getStoredToken());
+  const token = getStoredToken();
+  if (!token) return false;
+  // Token dari fallback lokal selalu diawali 'laundry_msn_'
+  // Token dari backend API berupa angka|string acak (misal: "3|aRsX...")
+  return !token.startsWith("laundry_msn_");
 }
 
 export async function fetchTransactionsFromApi() {

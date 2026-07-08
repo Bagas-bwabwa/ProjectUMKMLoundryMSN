@@ -96,6 +96,7 @@ export function CrudPage({ configKey }) {
   const localHook = useLocalData(config.storageKey, config.initialData);
   const { data, add, update, remove } = useApiBacked ? apiHook : localHook;
 
+  // Search & Filter
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
